@@ -4,9 +4,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AutomaLab</title>
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="stylesheet" type="css/canvas.css">
         <link rel="icon" type="image/png" href="assets/icon.png"/>
+
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/canvas.css">
+        <link rel="stylesheet" href="css/toolbar.css">
+        <link rel="stylesheet" href="css/sidebar.css">
     </head>
 
     <body>
@@ -14,20 +17,87 @@
             <header>
                 <h1>AutomaLab</h1>
                 <div class="header-info">
-                    <span id="stateCount">Estados: 0</span>
-                    <span id="transitionCount">Transições: 0</span>
+                    <span id="state-count">Estados: 0</span>
+                    <span id="transition-count">Transições: 0</span>
                 </div>
             </header>
 
             <div class="main">
                 <div class="toolbar" id="toolbar">
-                    <button class="toolbarBtn" id="addStateBtn">Adicionar Estado</button>
-                    <button class="toolbarBtn" id="addTransitionBtn">Adicionar Transição</button>
-                    <button class="toolbarBtn" id="simulateBtn">Simular</button>
+                    <button class="toolbar-btn" id="select-state-btn">Selecionar</button>
+                    <button class="toolbar-btn" id="add-state-btn">Adicionar Estado</button>
+                    <button class="toolbar-btn" id="add-transition-btn">Adicionar Transição</button>
+                    <div class="toolbar-divider"></div>
+                    <button class="toolbar-btn" id="save-btn">Exportar</button>
+                    <button class="toolbar-btn" id="load-btn">Importar</button>
+                    <button class="toolbar-btn" id="clear-btn">Limpar Tudo</button>
+                </div>
+
+                <div class="workspace">
+                    <svg class="canvas" id="canvas">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Propriedades do Autômato</div>
+                        <div class="sidebar-item">
+                            <label class="sidebar-label">Tipo</label>
+                            <select name="automata-type" id="automata-type">
+                                <option value="dfa">AFD (Determinístico)</option>
+                                <option value="nfa">AFND (Não-determinístico)</option>
+                            </select>
+                        </div>
+
+                        <div class="sidebar-item">
+                            <label class="sidebar-label">Nome</label>
+                            <input type="text" id="automata-name" placeholder="Meu Autômato" value="Automato 1">
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Estado Selecionado</div>
+                        <div id="selected-state">Selecione um estado</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Ações Rápidas</div>
+                        <button class="btn" id="btn-export">⬇️ Exportar JSON</button>
+                        <button class="btn secondary" id="btn-import">⬆️ Importar JSON</button>
+                        <button class="btn danger" id="btn-delete-all">❌ Deletar Tudo</button>
+                    </div>
+
+                    <div class="simulator-panel">
+                        <div class="sidebar-title">Simulador</div>
+                        <div class="sim-input-group">
+                            <input type="text" id="simInput" placeholder="Digite a cadeia (ex: aabb)" value="">
+                            <button class="btn" id="btnSimulate" style="min-width: 80px;">▶ Simular</button>
+                        </div>
+                        <div id="simOutput" class="simulator-output">Teste uma cadeia</div>
+                    </div>
                 </div>
             </div>
-
         </div>
     </body>
+
+    <script src="js/utils/constants.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <script src="js/canvas/stateNode.js"></script>
+    <script src="js/canvas/transitionEdge.js"></script>
+    <script src="js/canvas/canvas.js"></script>
+    
+    <script src="js/simulator/simulator.js"></script>
+    <script src="js/storage/jsonManager.js"></script>
+    <script src="js/ui/toolbar.js"></script>
+    <script src="js/ui/sidebar.js"></script>
+    <script src="js/ui/modal.js"></script>
+    
+    <script src="js/main.js"></script>
 
 </html>
