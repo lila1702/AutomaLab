@@ -263,86 +263,130 @@ class ContextModalManager {
      * Handler de salvamento
      * @private
      */
-    _handleSave() {
-        // Validar estado
-        if (!this.currentStateId && this.currentStateId !== 0) {
-            showNotification('Nenhum estado selecionado', 'error');
-            return;
-        }
-
-        // Validar elemento
-        if (!this.elements.stateName) {
-            console.error('Elemento stateName não encontrado');
-            return;
-        }
-
-        const newName = this.elements.stateName.value.trim();
-        const newInitial = this.elements.stateInitial?.checked || false;
-        const newAccept = this.elements.stateAccept?.checked || false;
-
-        // Validação
-        if (!newName) {
-            this._shakeModal();
-            showNotification('Nome do estado não pode ser vazio', 'warning');
-            return;
-        }
-
-        if (!isValidStateName(newName)) {
-            this._shakeModal();
-            showNotification('Nome de estado inválido. Use apenas letras, números e underscore', 'warning');
-            return;
-        }
-
-        try {
-            // Atualizar estado
-            this.canvas.updateState(this.currentStateId, {
-                label: newName,
-                isInitial: newInitial,
-                isAccept: newAccept,
-            });
-
-            showNotification(MESSAGES.SUCCESS.STATE_UPDATED, 'success');
-            this._dispatchEvent('contextmodal:stateSaved', {
-                stateId: this.currentStateId,
-                state: {
-                    label: newName,
-                    isInitial: newInitial,
-                    isAccept: newAccept,
-                },
-            });
-
-            this.close();
-        } catch (error) {
-            this._shakeModal();
-            showNotification(error.message, 'error');
-        }
+    /**
+ * Handler de salvamento (ATUALIZADO)
+ * @private
+ */
+_handleSave() {
+    // Validar estado
+    if (!this.currentStateId && this.currentStateId !== 0) {
+        showNotification('Nenhum estado selecionado', 'error');
+        return;
     }
+
+    // Obter estado
+    const state = this.canvas.states.get(this.currentStateId);
+    if (!state) {
+        showNotification('Estado não encontrado', 'error');
+        return;
+    }
+
+    // Validar elemento
+    if (!this.elements.stateName) {
+        console.error('Elemento stateName não encontrado');
+        return;
+    }
+
+    const newName = this.elements.stateName.value.trim();
+    const newInitial = this.elements.stateInitial?.checked || false;
+    const newAccept = this.elements.stateAccept?.checked || false;
+
+    // Validação
+    if (!newName) {
+        this._shakeModal();
+        showNotification('Nome do estado não pode ser vazio', 'warning');
+        return;
+    }
+
+    if (!isValidStateName(newName)) {
+        this._shakeModal();
+        showNotification('Nome de estado inválido. Use apenas letras, números e underscore', 'warning');
+        return;
+    }
+
+    try {
+        // ✨ SALVAR ESTADO ANTIGO PARA UNDO
+        const oldData = {
+            label: state.label,
+            isInitial: state.isInitial,
+            isAccept: state.isAccept
+        };
+
+        const newData = {
+            label: newName,
+            isInitial: newInitial,
+            isAccept: newAccept
+        };
+
+        // ✨ USAR COMANDO PARA UNDO/REDO
+        if (window.APP && window.APP.undoRedo) {
+            const cmd = new UpdateStateCommand(
+                this.canvas,
+                this.currentStateId,
+                oldData,
+                newData
+            );
+            window.APP.undoRedo.execute(cmd);
+        } else {
+            // Fallback: atualizar diretamente se Undo/Redo não disponível
+            console.warn('Undo/Redo não disponível, atualizando diretamente');
+            this.canvas.updateState(this.currentStateId, newData);
+        }
+
+        showNotification(MESSAGES.SUCCESS.STATE_UPDATED, 'success');
+        this._dispatchEvent('contextmodal:stateSaved', {
+            stateId: this.currentStateId,
+            state: newData
+        });
+
+        this.close();
+    } catch (error) {
+        this._shakeModal();
+        showNotification(error.message, 'error');
+        console.error('Erro ao salvar estado:', error);
+    }
+}
 
     /**
      * Handler de deleção
      * @private
      */
-    async _handleDelete() {
-        const state = this.canvas.states.get(this.currentStateId);
-        if (!state) return;
+    /**
+ * Handler de deleção (ATUALIZADO)
+ * @private
+ */
+async _handleDelete() {
+    const state = this.canvas.states.get(this.currentStateId);
+    if (!state) return;
 
-        const confirmed = await showConfirmation(
-            `${MESSAGES.CONFIRM.DELETE_STATE}\n\nEstado: ${state.label}`
-        );
+    const confirmed = await showConfirmation(
+        `${MESSAGES.CONFIRM.DELETE_STATE}\n\nEstado: ${state.label}`
+    );
 
-        if (confirmed) {
-            try {
+    if (confirmed) {
+        try {
+            // ✨ USAR COMANDO PARA UNDO/REDO
+            if (window.APP && window.APP.undoRedo) {
+                const cmd = new DeleteStateCommand(window.APP.canvas, this.currentStateId);
+                window.APP.undoRedo.execute(cmd);
+            } else {
+                // Fallback: deletar diretamente se Undo/Redo não disponível
+                console.warn('Undo/Redo não disponível, deletando diretamente');
                 this.canvas.removeState(this.currentStateId);
-                showNotification(MESSAGES.SUCCESS.STATE_DELETED, 'success');
-                this._dispatchEvent('contextmodal:stateDeleted', {
-                    stateId: this.currentStateId,
-                });
-                this.close();
-            } catch (error) {
-                showNotification(error.message, 'error');
             }
+            
+            showNotification(MESSAGES.SUCCESS.STATE_DELETED, 'success');
+            this._dispatchEvent('contextmodal:stateDeleted', {
+                stateId: this.currentStateId
+            });
+            
+            this.close();
+        } catch (error) {
+            showNotification(error.message, 'error');
+            console.error('Erro ao deletar estado:', error);
         }
     }
+}
 
     /**
      * Handler de limpeza de transições

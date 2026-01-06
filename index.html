@@ -1,190 +1,352 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AutomaLab</title>
-        <link rel="icon" type="image/png" href="assets/icon.png"/>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutomaLab - Editor de Autômatos Finitos</title>
+    <meta name="description" content="Ferramenta web para criar, editar e simular autômatos finitos">
+    <link rel="icon" type="image/png" href="assets/icon.png"/>
 
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="stylesheet" href="css/canvas.css">
-        <link rel="stylesheet" href="css/toolbar.css">
-        <link rel="stylesheet" href="css/sidebar.css">
-        <link rel="stylesheet" href="css/context-modal.css">
-    </head>
+    <!-- CSS: Ordem importa! Base primeiro, depois específicos -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/context-modal.css">
+    <link rel="stylesheet" href="css/modal.css">
 
-    <body>
-        <div class="container">
-            <header>
-                <h1>AutomaLab</h1>
-                <div class="header-info">
-                    <span id="state-count">Estados: 0</span>
-                    <span id="transition-count">Transições: 0</span>
-                </div>
-            </header>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+</head>
 
-            <div class="main">
-                <!-- TOOLBAR -->
-                <div class="toolbar" id="toolbar">
-                    <button class="toolbar-btn" id="select-state-btn">Selecionar</button>
-                    <button class="toolbar-btn" id="add-state-btn">Adicionar Estado</button>
-                    <button class="toolbar-btn" id="add-transition-btn">Adicionar Transição</button>
-                    <div class="toolbar-divider"></div>
-                    <button class="toolbar-btn" id="save-btn">Exportar</button>
-                    <button class="toolbar-btn" id="load-btn">Importar</button>
-                    <button class="toolbar-btn" id="clear-btn">Limpar Tudo</button>
-                </div>
-
-                <!-- CANVAS -->
-                <div class="workspace">
-                    <svg class="canvas" id="canvas">
-                        <defs>
-                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                                <polygon points="0 0, 10 3, 0 6" />
-                            </marker>
-                        </defs>
-                    </svg>
-                </div>
-
-                <!-- SIDEBAR -->
-                <div class="sidebar">
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Propriedades do Autômato</div>
-                        <div class="sidebar-item">
-                            <label class="sidebar-label">Tipo</label>
-                            <select name="automata-type" id="automata-type">
-                                <option value="dfa">AFD (Determinístico)</option>
-                                <option value="nfa">AFND (Não-determinístico)</option>
-                            </select>
-                        </div>
-
-                        <div class="sidebar-item">
-                            <label class="sidebar-label">Nome</label>
-                            <input type="text" id="automata-name" placeholder="Meu Autômato" value="Automato 1">
-                        </div>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Estado Selecionado</div>
-                        <div id="selected-state">Selecione um estado</div>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Ações Rápidas</div>
-                        <button class="btn" id="btn-export">⬇️ Exportar JSON</button>
-                        <button class="btn secondary" id="btn-import">⬆️ Importar JSON</button>
-                        <button class="btn danger" id="btn-delete-all">❌ Deletar Tudo</button>
-                    </div>
-
-                    <div class="simulator-panel">
-                        <div class="sidebar-title">Simulador</div>
-                        <div class="sim-input-group">
-                            <input type="text" id="simInput" placeholder="Digite a cadeia (ex: aabb)" value="">
-                            <button class="btn" id="btnSimulate" style="min-width: 80px;">▶ Simular</button>
-                        </div>
-                        <div id="simOutput" class="simulator-output">Teste uma cadeia</div>
-                    </div>
-                </div>
+<body>
+    <!-- CONTAINER PRINCIPAL -->
+    <div class="container">
+        
+        <!-- ===== HEADER ===== -->
+        <header>
+            <h1>🎓 AutomaLab</h1>
+            <div class="header-info">
+                <span id="state-count" title="Número total de estados">Estados: 0</span>
+                <span id="transition-count" title="Número total de transições">Transições: 0</span>
+                <span id="automata-status" title="Status do autômato">●</span>
             </div>
-        </div>
+        </header>
 
-        <!-- CONTEXT MODAL OVERLAY -->
-        <div class="context-overlay" id="context-overlay"></div>
-
-        <!-- CONTEXT MODAL -->
-        <div class="context-modal" id="context-modal">
-            <!-- HEADER -->
-            <div class="context-modal-header">
-                <h3 class="context-modal-title">Propriedades do Estado</h3>
-                <button class="context-modal-close" id="context-modal-close">&times;</button>
-            </div>
-            <!-- BODY -->
-            <div class="context-modal-body">
-                <!-- INFO: Estado Selecionado -->
-                <div class="context-selected-info" id="context-selected-info">
-                    <strong id="context-state-name">Estado: q0</strong>
-                    <span id="context-state-status">Novo estado</span>
-                </div>
-
-                <!-- SEÇÃO 1: Nome do Estado -->
-                <div class="context-section">
-                    <div class="context-section-title">Nome</div>
-                    <div class="context-item">
-                        <label class="context-item-label">Identificador</label>
-                        <input type="text" id="context-state-input-name" class="context-item-input" placeholder="q0, q1, q2...">
-                    </div>
-                </div>
-
-                <!-- SEÇÃO 2: Tipo de Estado -->
-                <div class="context-section">
-                    <div class="context-section-title">Tipo de Estado</div>
-
-                    <!-- Estado Inicial -->
-                    <div class="context-item">
-                        <label class="context-item-checkbox">
-                            <input type="checkbox" name="context-state-initial" id="context-state-initial">
-                            <span>Marcar como Estado Inicial</span>
-                        </label>
-                        <div class="context-item-initial" id="context-item-initial-hint" style="display: none;">
-                            Estado Inicial do Autômato
-                        </div>
-                    </div>
-
-                    <!-- Estado de Aceitação -->
-                    <div class="context-item">
-                        <label class="context-item-checkbox">
-                            <input type="checkbox" id="context-state-accept">
-                            <span>Marcar como Estado de Aceitação</span>
-                        </label>
-                        <div class="context-item-accept" id="context-accept-hint" style="display: none;">
-                            Estado final (aceitação)
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- SEÇÃO 3: Ações -->
-                <div class="context-section">
-                    <div class="context-section-title">Ações</div>
+        <!-- ===== MAIN LAYOUT ===== -->
+        <div class="main">
+            
+            <!-- ===== TOOLBAR (BARRA DE FERRAMENTAS) ===== -->
+            <div class="toolbar" id="toolbar">
+                
+                <!-- GRUPO: Ferramentas de Seleção -->
+                <div class="toolbar-group">
+                    <span class="toolbar-group-label">Ferramentas</span>
                     
-                    <!-- Deletar Estado -->
-                    <button class="context-action-btn danger" id="context-delete-state">
-                        <span class="context-action-icon">🗑️</span>
-                        <span>Deletar Este Estado</span>
+                    <button class="toolbar-btn active" id="select-state-btn" 
+                            title="Selecionar e mover estados (Alt+S)">
+                        🖱️ Selecionar
                     </button>
-
-                    <!-- Limpar Transições -->
-                    <button class="context-action-btn" id="context-clear-transitions">
-                        <span class="context-action-icon">🔄</span>
-                        <span>Limpar Transições</span>
+                    
+                    <button class="toolbar-btn" id="add-state-btn" 
+                            title="Adicionar novo estado (Alt+A)">
+                        ➕ Estado
+                    </button>
+                    
+                    <button class="toolbar-btn" id="add-transition-btn" 
+                            title="Adicionar transição entre estados (Alt+T)">
+                        🔗 Transição
                     </button>
                 </div>
 
+                <div class="toolbar-divider"></div>
+
+                <!-- GRUPO: Histórico (Undo/Redo) -->
+                <div class="toolbar-group">
+                    <span class="toolbar-group-label">Histórico</span>
+                    
+                    <button class="toolbar-btn" id="btn-undo" disabled 
+                            title="Desfazer última ação (Ctrl+Z)">
+                        ↩️ Desfazer
+                    </button>
+                    
+                    <button class="toolbar-btn" id="btn-redo" disabled 
+                            title="Refazer ação desfeita (Ctrl+Y)">
+                        ↪️ Refazer
+                    </button>
+                </div>
+
+                <div class="toolbar-divider"></div>
+
+                <!-- GRUPO: Visualização (Zoom/Pan) -->
+                <div class="toolbar-group">
+                    <span class="toolbar-group-label">Visualização</span>
+                    
+                    <button class="toolbar-btn" id="btn-zoom-in" 
+                            title="Aproximar (Ctrl++)">
+                        🔍+
+                    </button>
+                    
+                    <button class="toolbar-btn" id="btn-zoom-out" 
+                            title="Afastar (Ctrl+-)">
+                        🔍−
+                    </button>
+                    
+                    <button class="toolbar-btn" id="btn-zoom-reset" 
+                            title="Resetar zoom (Ctrl+0)">
+                        🔄 Reset
+                    </button>
+                    
+                    <button class="toolbar-btn" id="btn-fit-content" 
+                            title="Ajustar ao conteúdo">
+                        ⛶ Ajustar
+                    </button>
+                    
+                    <span id="zoom-level" 
+                          style="font-size:11px; padding:4px 8px; background:#f5f5f5; border-radius:3px; margin-top:4px; display:block; text-align:center; font-family: 'Courier New', monospace; font-weight:600; color:#2196f3;">
+                        100%
+                    </span>
+                </div>
+
             </div>
-            <!-- FOOTER -->
-            <div class="context-modal-footer">
-                <button class="btn secondary" id="context-modal-cancel">Cancelar</button>
-                <button class="btn primary" id="context-modal-save">Salvar</button>
+
+            <!-- ===== WORKSPACE (CANVAS SVG) ===== -->
+            <div class="workspace">
+                <div id="canvas" class="canvas" oncontextmenu="return false;"></div>
+            </div>
+
+            <!-- ===== SIDEBAR (PAINEL LATERAL) ===== -->
+            <div class="sidebar">
+                
+                <!-- SEÇÃO: Propriedades do Autômato -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">⚙️ Propriedades do Autômato</div>
+                    
+                    <!-- Tipo de autômato -->
+                    <div class="sidebar-item">
+                        <label class="sidebar-label">Tipo</label>
+                        <select name="automata-type" id="automata-type" 
+                                title="Tipo do autômato">
+                            <option value="dfa">AFD (Determinístico)</option>
+                            <option value="nfa">AFN (Não-determinístico)</option>
+                        </select>
+                    </div>
+
+                    <!-- Nome do autômato -->
+                    <div class="sidebar-item">
+                        <label class="sidebar-label">Nome</label>
+                        <input type="text" id="automata-name" 
+                               placeholder="Nome do autômato" 
+                               value="Autômato 1"
+                               maxlength="50">
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: Estado Selecionado -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📍 Estado Selecionado</div>
+                    <div id="selected-state" class="sidebar-item" 
+                         style="background:#f5f5f5; padding:10px; border-radius:4px; border-left:3px solid #2196f3; font-size:12px;">
+                        Nenhum estado selecionado
+                        <div style="margin-top:8px; font-size:11px; color:#999;">
+                            💡 Clique direito em um estado para editar
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: Opções -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🎛️ Opções</div>
+                    
+                    <!-- Snap to Grid -->
+                    <div class="sidebar-item inline">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="snap-to-grid" 
+                                   title="Alinhar estados à grade">
+                            <span style="font-size:12px;">Snap to Grid</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Mostrar Grade -->
+                    <div class="sidebar-item inline">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="show-grid" checked
+                                   title="Mostrar/ocultar grade do canvas">
+                            <span style="font-size:12px;">Mostrar Grade</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: Simulador -->
+                <div class="simulator-panel">
+                    <div class="sidebar-title">▶️ Simulador</div>
+                    
+                    <!-- Campo de entrada -->
+                    <div class="sim-input-group">
+                        <input type="text" id="simInput" 
+                               placeholder="Digite a cadeia (ex: aabb)" 
+                               value=""
+                               title="Cadeia de entrada para simulação"
+                               maxlength="100">
+                        <button class="btn" id="btnSimulate" 
+                                style="min-width: 80px;"
+                                title="Simular cadeia (Enter)">
+                            ▶ Simular
+                        </button>
+                    </div>
+                    
+                    <!-- Saída da simulação -->
+                    <div id="simOutput" class="simulator-output">
+                        💡 Digite uma cadeia e clique em Simular
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: Ações Rápidas -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">⚡ Ações Rápidas</div>
+                    <div class="quick-actions">
+                        <button class="btn" id="btn-export" 
+                                title="Baixar autômato como JSON">
+                            ⬇️ Exportar JSON
+                        </button>
+                        <button class="btn secondary" id="btn-import" 
+                                title="Carregar autômato de arquivo JSON">
+                            ⬆️ Importar JSON
+                        </button>
+                        <button class="btn danger" id="btn-delete-all" 
+                                title="Deletar todos os estados e transições">
+                            ❌ Deletar Tudo
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
         </div>
+    </div>
 
-        <!-- SCRIPTS -->
-        <script src="js/utils/constants.js"></script>
-        <script src="js/utils/helpers.js"></script>
-        
-        <script src="js/canvas/stateNode.js"></script>
-        <script src="js/canvas/transitionEdge.js"></script>
-        <script src="js/canvas/canvas.js"></script>
-        
-        <script src="js/simulator/simulator.js"></script>
-        
-        <script src="js/storage/jsonManager.js"></script>
-        
-        <script src="js/ui/toolbar.js"></script>
-        <script src="js/ui/contextModal.js"></script>
-        
-        <script src="js/main.js"></script>
+    <!-- ===== CONTEXT MODAL OVERLAY ===== -->
+    <div class="context-overlay" id="context-overlay"></div>
 
-    </body>
+    <!-- ===== CONTEXT MODAL (Edição de Estado) ===== -->
+    <div class="context-modal" id="context-modal">
+        
+        <!-- HEADER -->
+        <div class="context-modal-header">
+            <h3 class="context-modal-title">Propriedades do Estado</h3>
+            <button class="context-modal-close" id="context-modal-close" 
+                    title="Fechar (ESC)">&times;</button>
+        </div>
+        
+        <!-- BODY -->
+        <div class="context-modal-body">
+            
+            <!-- INFO: Estado Selecionado -->
+            <div class="context-selected-info" id="context-selected-info">
+                <strong id="context-state-name">Estado: q0</strong>
+                <span id="context-state-status">Novo estado</span>
+            </div>
+
+            <!-- SEÇÃO 1: Nome do Estado -->
+            <div class="context-section">
+                <div class="context-section-title">Nome</div>
+                <div class="context-item">
+                    <label class="context-item-label">Identificador</label>
+                    <input type="text" id="context-state-input-name" 
+                           class="context-item-input" 
+                           placeholder="q0, q1, q2..."
+                           maxlength="20">
+                </div>
+            </div>
+
+            <!-- SEÇÃO 2: Tipo de Estado -->
+            <div class="context-section">
+                <div class="context-section-title">Tipo de Estado</div>
+
+                <!-- Estado Inicial -->
+                <div class="context-item">
+                    <label class="context-item-checkbox">
+                        <input type="checkbox" name="context-state-initial" 
+                               id="context-state-initial">
+                        <span>Marcar como Estado Inicial</span>
+                    </label>
+                    <div class="context-item-initial" id="context-initial-hint" 
+                         style="display: none;">
+                        → Estado Inicial do Autômato
+                    </div>
+                </div>
+
+                <!-- Estado de Aceitação -->
+                <div class="context-item">
+                    <label class="context-item-checkbox">
+                        <input type="checkbox" id="context-state-accept">
+                        <span>Marcar como Estado de Aceitação</span>
+                    </label>
+                    <div class="context-item-accept" id="context-accept-hint" 
+                         style="display: none;">
+                        ◯◯ Estado final (aceitação)
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SEÇÃO 3: Ações -->
+            <div class="context-section">
+                <div class="context-section-title">Ações</div>
+                
+                <!-- Deletar Estado -->
+                <button class="context-action-btn danger" id="context-delete-state"
+                        title="Deletar este estado e suas transições">
+                    <span class="context-action-icon">🗑️</span>
+                    <span>Deletar Este Estado</span>
+                </button>
+
+                <!-- Limpar Transições -->
+                <button class="context-action-btn" id="context-clear-transitions"
+                        title="Remover todas as transições deste estado">
+                    <span class="context-action-icon">🔄</span>
+                    <span>Limpar Transições</span>
+                </button>
+            </div>
+
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="context-modal-footer">
+            <button class="btn secondary" id="context-modal-cancel">Cancelar</button>
+            <button class="btn primary" id="context-modal-save">Salvar</button>
+        </div>
+
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <!-- IMPORTANTE: A ordem de carregamento importa! -->
+    
+    <!-- 1. Utilitários (primeiro) -->
+    <script src="js/utils/constants.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <!-- 2. Classes do Canvas -->
+    <script src="js/canvas/stateNode.js"></script>
+    <script src="js/canvas/transitionEdge.js"></script>
+    <script src="js/canvas/canvas.js"></script>
+    
+    <!-- 3. Simulador -->
+    <script src="js/simulator/simulator.js"></script>
+    
+    <!-- 4. Storage -->
+    <script src="js/storage/jsonManager.js"></script>
+    
+    <!-- 5. UI -->
+    <script src="js/ui/toolbar.js"></script>
+    <script src="js/ui/contextModal.js"></script>
+    
+    <!-- 6. NOVAS FUNCIONALIDADES (Features) -->
+    <script src="js/features/dragDrop.js"></script>
+    <script src="js/features/undoRedo.js"></script>
+    <script src="js/features/zoomPan.js"></script>
+    
+    <!-- 7. Main (por último) -->
+    <script src="js/main.js"></script>
+
+</body>
 </html>
