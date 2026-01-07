@@ -21,8 +21,8 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     z-index: 1001;
     display: none;
-    min-width: 280px;
-    max-width: 350px;
+    width: 320px;
+    max-height: 80vh;
     padding: 0;
     animation: contextSlideIn 0.2s ease;
 }
@@ -86,11 +86,27 @@
 /* ===== CONTEXT MODAL BODY ===== */
 .context-modal-body {
     padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     max-height: 400px;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar customizada para Webkit (Chrome, Safari, Edge) */
+.context-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.context-modal-body::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.context-modal-body::-webkit-scrollbar-thumb {
+    background: #2196f3;
+    border-radius: 4px;
+}
+
+.context-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #1976d2;
 }
 
 /* ===== CONTEXT MODAL ITEM ===== */

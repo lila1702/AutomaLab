@@ -235,23 +235,23 @@ class ContextModalManager {
     _positionModal(x, y) {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        const modalWidth = 280;
-        const modalHeight = this.modal.offsetHeight || 400;
+        const modalWidth = 320;
+        const modalHeight = 500;
 
-        let left = x;
+        let left = x + 10;
         let top = y;
 
-        // Se sair da direita
-        if (left + modalWidth > viewportWidth) {
-            left = viewportWidth - modalWidth - 10;
+        // Ajustar se sair da direita
+        if (left + modalWidth > viewportWidth - 20) {
+            left = viewportWidth - modalWidth - 20;
         }
 
-        // Se sair de baixo
-        if (top + modalHeight > viewportHeight) {
-            top = viewportHeight - modalHeight - 10;
+        // Ajustar se sair de baixo
+        if (top + modalHeight > viewportHeight - 20) {
+            top = viewportHeight - modalHeight - 20;
         }
 
-        // Padding mínimo das bordas
+        // Garantir mínimos
         left = Math.max(10, left);
         top = Math.max(10, top);
 

@@ -111,7 +111,7 @@
 
             <!-- ===== WORKSPACE (CANVAS SVG) ===== -->
             <div class="workspace">
-                <div id="canvas" class="canvas" oncontextmenu="return false;"></div>
+                <div id="canvas" class="canvas"></div>
             </div>
 
             <!-- ===== SIDEBAR (PAINEL LATERAL) ===== -->
@@ -127,7 +127,7 @@
                         <select name="automata-type" id="automata-type" 
                                 title="Tipo do autômato">
                             <option value="dfa">AFD (Determinístico)</option>
-                            <option value="nfa">AFN (Não-determinístico)</option>
+                            <option value="nfa">AFND (Não-determinístico)</option>
                         </select>
                     </div>
 
@@ -341,9 +341,7 @@
     <script src="js/ui/contextModal.js"></script>
     
     <!-- 6. NOVAS FUNCIONALIDADES (Features) -->
-    <script src="js/features/dragDrop.js"></script>
     <script src="js/features/undoRedo.js"></script>
-    <script src="js/features/zoomPan.js"></script>
     
     <!-- 7. Main (por último) -->
     <script src="js/main.js"></script>

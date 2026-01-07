@@ -122,20 +122,27 @@ class CanvasManager {
         // Eventos
         this._initEventListeners();
         
-        // ===== BLOQUEIO ADICIONAL DO MENU CONTEXTUAL =====
-        // Bloquear no container gerado pelo Cytoscape
-        this.cy.container().addEventListener('contextmenu', (e) => {
+        // ===== 🚨 SOLUÇÃO RADICAL: OVERLAY INVISÍVEL =====
+        const container = this.cy.container();
+        
+        // Bloquear TUDO no container
+        container.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
+            console.log('🛡️ Bloqueado no container!');
             return false;
         }, true);
         
-        // Desabilitar seleção de texto no canvas (melhora UX)
-        this.cy.container().style.userSelect = 'none';
-        this.cy.container().style.webkitUserSelect = 'none';
-        this.cy.container().style.mozUserSelect = 'none';
-        this.cy.container().oncontextmenu = () => false;
+        container.oncontextmenu = (e) => {
+            e.preventDefault();
+            return false;
+        };
+        
+        // Desabilitar seleção
+        container.style.userSelect = 'none';
+        container.style.webkitUserSelect = 'none';
+        container.style.mozUserSelect = 'none';
         
         console.log('✅ CanvasManager inicializado com Cytoscape');
     }
@@ -173,17 +180,21 @@ class CanvasManager {
             console.log(`Estado ${node.data('label')} movido`);
         });
 
-        // Context menu (clique direito)
+        // Context menu (clique direito) - MÚLTIPLAS CAMADAS DE BLOQUEIO
         this.cy.on('cxttap', 'node', (evt) => {
             const node = evt.target;
             const stateId = node.data('stateId');
             
-            // BLOQUEAR MENU NATIVO - IMEDIATAMENTE!
+            // ✅ CAMADA 1: BLOQUEAR MENU NATIVO - IMEDIATAMENTE!
             if (evt.originalEvent) {
                 evt.originalEvent.preventDefault();
                 evt.originalEvent.stopPropagation();
                 evt.originalEvent.stopImmediatePropagation();
             }
+            
+            // ✅ CAMADA 2: Prevenir evento do Cytoscape também
+            evt.preventDefault();
+            evt.stopPropagation();
             
             // Obter posição do mouse na tela
             const originalEvent = evt.originalEvent;
@@ -192,36 +203,14 @@ class CanvasManager {
             
             console.log('🖱️ Clique direito em estado', stateId);
             
-            // Abrir context modal diretamente
-            if (APP.contextModal) {
+            // ✅ CAMADA 3: Abrir context modal
+            if (typeof APP !== 'undefined' && APP.contextModal) {
                 APP.contextModal.open(stateId, clientX, clientY);
             }
-        });
-        
-        // Bloquear menu de contexto nativo do navegador no canvas
-        document.addEventListener('contextmenu', (evt) => {
-            const target = evt.target;
-            if (target.closest('#canvas') || target.id === 'canvas') {
-                evt.preventDefault();
-                evt.stopPropagation();
-                evt.stopImmediatePropagation();
-                return false;
-            }
-        }, true);
-        
-        // Bloquear também no container do cytoscape
-        const canvasElement = document.getElementById('canvas');
-        if (canvasElement) {
-            canvasElement.addEventListener('contextmenu', (evt) => {
-                evt.preventDefault();
-                evt.stopPropagation();
-                evt.stopImmediatePropagation();
-                return false;
-            }, true);
             
-            // Atributo inline para Firefox
-            canvasElement.oncontextmenu = () => false;
-        }
+            // ✅ RETORNAR FALSE EXPLICITAMENTE
+            return false;
+        });
         
         // Click em transição para editar
         this.cy.on('tap', 'edge', (evt) => {
@@ -250,6 +239,8 @@ class CanvasManager {
                 }
             }
         });
+        
+        console.log('✅ CanvasManager inicializado com Cytoscape');
     }
 
     /**

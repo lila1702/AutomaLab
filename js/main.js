@@ -5,6 +5,19 @@
 // Substitua seu main.js atual por este arquivo
 // =====================================================
 
+// ===== 🛡️ BLOQUEIO ABSOLUTO DO MENU NATIVO (SOLUÇÃO RADICAL!) =====
+// Bloqueio IMEDIATO sem verificações - mais eficiente
+window.addEventListener('contextmenu', function(e) {
+    // Bloquear TUDO exceto inputs de texto
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('🛡️ BLOQUEADO!');
+        return false;
+    }
+}, true);
+
 // ===== ESTADO GLOBAL DA APLICAÇÃO =====
 const APP = {
     canvas: null,

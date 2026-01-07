@@ -22,19 +22,26 @@
     background-size: 40px 40px;
     background-position: -1px -1px;
     
-    /* Desabilitar menu contextual nativo */
+    /* 🛡️ BLOQUEIO TOTAL DO MENU CONTEXTUAL */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-context-menu: none;
+    pointer-events: auto;
 }
 
-/* Bloquear menu contextual em todos os elementos internos do canvas */
-#canvas * {
+/* 🛡️ Bloquear menu contextual em todos os elementos internos do canvas */
+#canvas *,
+#canvas canvas,
+.cy-container,
+.cy-container * {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-touch-callout: none;
 }
 
 /* ===== CANVAS VAZIO ===== */
