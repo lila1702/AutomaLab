@@ -1,5 +1,9 @@
 # AutomaLab
 
+![Status](https://img.shields.io/badge/Status-50%25%20Completo-purple)
+![Versão](https://img.shields.io/badge/Versão-0.1-blue)
+![Licença](https://img.shields.io/badge/Licença-MIT-green)
+
 **Editor web interativo de Autômatos Finitos para fins didáticos**
 
 ## Sobre o Projeto
