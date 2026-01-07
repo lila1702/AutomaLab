@@ -31,25 +31,10 @@ class ToolbarManager {
         // Botão: Adicionar Transição
         const addTransitionBtn = document.getElementById('add-transition-btn');
         if (addTransitionBtn) {
-            addTransitionBtn.addEventListener('click', () => this.setMode(MODES.ADD_TRANSITION));
-        }
-
-        // Botão: Salvar/Exportar
-        const saveBtn = document.getElementById('save-btn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => this.handleExport());
-        }
-
-        // Botão: Carregar/Importar
-        const loadBtn = document.getElementById('load-btn');
-        if (loadBtn) {
-            loadBtn.addEventListener('click', () => this.handleImport());
-        }
-
-        // Botão: Limpar Tudo
-        const clearBtn = document.getElementById('clear-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => this.handleClear());
+            addTransitionBtn.addEventListener('click', () => {
+                console.log('🔗 Botão de transição clicado!');
+                this.setMode(MODES.ADD_TRANSITION);
+            });
         }
 
         // Atalhos de teclado
@@ -85,8 +70,19 @@ class ToolbarManager {
         const btn = document.getElementById(buttonId);
         if (btn) btn.classList.add('active');
 
+        // Limpar estado de transição se estava em progresso
+        if ((this.transitionStart !== null && this.transitionStart !== undefined) && 
+            this.canvas && this.canvas.cy) {
+            this.canvas.cy.$(`#state-${this.transitionStart}`).removeClass('transition-source');
+        }
+
         this.currentMode = mode;
         this.transitionStart = null;
+        
+        // Sincronizar com APP.currentMode
+        if (typeof APP !== 'undefined') {
+            APP.currentMode = mode;
+        }
 
         // Mudar cursor do canvas
         const canvas = document.getElementById('canvas');
@@ -95,6 +91,11 @@ class ToolbarManager {
                                   mode === MODES.ADD_TRANSITION ? 'cell' :
                                   'default';
         }
+        
+        // Resetar cursor do body também
+        document.body.style.cursor = 'default';
+
+        console.log('🔧 Modo alterado para:', mode);
 
         // Disparar evento
         this._dispatchEvent(EVENTS.MODE_CHANGED, { mode });

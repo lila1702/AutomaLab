@@ -10,356 +10,38 @@
     justify-content: center;
 }
 
-.workspace.dragging {
-    cursor: grabbing;
-}
-
-/* ===== SVG CANVAS ===== */
-svg.canvas {
+/* ===== CANVAS CYTOSCAPE ===== */
+#canvas {
     width: 100%;
     height: 100%;
-    cursor: crosshair;
     background: white;
+    /* Grid de fundo opcional */
     background-image: 
         linear-gradient(#f0f0f0 1px, transparent 1px),
         linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
     background-size: 40px 40px;
     background-position: -1px -1px;
-    display: block;
-}
-
-svg.canvas.hide-grid {
-    background-image: none;
-    background-color: white;
-}
-
-svg.canvas.mode-drag {
-    cursor: grab;
-}
-
-svg.canvas.mode-drag:active {
-    cursor: grabbing;
-}
-
-svg.canvas.mode-add-state {
-    cursor: crosshair;
-}
-
-svg.canvas.mode-add-transition {
-    cursor: cell;
-}
-
-svg.canvas.mode-delete {
-    cursor: not-allowed;
-}
-
-/* ===== GRUPOS SVG ===== */
-g.transitions-group {
-    pointer-events: none;
-}
-
-g.transitions-group * {
+    
+    /* 🛡️ BLOQUEIO TOTAL DO MENU CONTEXTUAL */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-context-menu: none;
     pointer-events: auto;
 }
 
-g.states-group {
-    pointer-events: none;
-}
-
-g.states-group * {
-    pointer-events: auto;
-}
-
-g.temp-transition {
-    pointer-events: none;
-}
-
-/* ===== ESTADOS (STATE NODES) ===== */
-.state-node {
-    cursor: pointer;
-}
-
-.state-node:hover circle.state-circle {
-    stroke-width: 3;
-    filter: drop-shadow(0 0 4px rgba(33, 150, 243, 0.4));
-}
-
-.state-node.selected circle.state-circle {
-    stroke-width: 3;
-    stroke: #1976d2;
-    filter: drop-shadow(0 0 6px rgba(25, 118, 210, 0.6));
-}
-
-.state-node.active circle.state-circle {
-    animation: stateActive 0.6s infinite;
-}
-
-/* ===== CÍRCULOS DE ESTADO ===== */
-circle.state-circle {
-    fill: #e3f2fd;
-    stroke: #2196f3;
-    stroke-width: 2;
-    transition: all 0.2s ease;
-}
-
-circle.state-circle.accept {
-    stroke-width: 4;
-}
-
-circle.state-circle.initial {
-    stroke-width: 2;
-}
-
-circle.state-circle:hover {
-    fill: #bbdefb;
-}
-
-circle.state-circle.accept:hover {
-    stroke-width: 5;
-}
-
-/* ===== LABELS DE ESTADO ===== */
-.state-label {
-    font-size: 14px;
-    font-weight: 600;
-    text-anchor: middle;
-    dominant-baseline: middle;
-    pointer-events: none;
-    fill: #2c3e50;
-    letter-spacing: 0.3px;
-}
-
-.state-node.selected .state-label {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-/* ===== SETA DE ESTADO INICIAL ===== */
-line.initial-arrow {
-    stroke: #2196f3;
-    stroke-width: 2;
-    marker-end: url(#arrowhead);
-    pointer-events: none;
-}
-
-/* ===== TRANSIÇÕES (EDGES) ===== */
-.transition-edge {
-    cursor: pointer;
-}
-
-.transition-edge:hover .transition-path {
-    stroke-width: 3;
-    filter: drop-shadow(0 0 3px rgba(33, 150, 243, 0.3));
-}
-
-.transition-edge.selected .transition-path {
-    stroke-width: 3;
-    stroke: #1976d2;
-    filter: drop-shadow(0 0 5px rgba(25, 118, 210, 0.5));
-}
-
-/* ===== PATHS DE TRANSIÇÃO ===== */
-.transition-path {
-    stroke: #2196f3;
-    stroke-width: 2;
-    fill: none;
-    marker-end: url(#arrowhead);
-    transition: all 0.2s ease;
-}
-
-.transition-path.self-loop {
-    stroke-dasharray: none;
-}
-
-path.temp-transition {
-    stroke: #2196f3;
-    stroke-width: 2;
-    fill: none;
-    stroke-dasharray: 5, 5;
-    marker-end: url(#arrowhead-temp);
-    pointer-events: none;
-}
-
-/* ===== LABELS DE TRANSIÇÃO ===== */
-.transition-label {
-    font-size: 12px;
-    font-weight: 500;
-    background: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    border: 1px solid #e0e0e0;
-    text-anchor: middle;
-    dominant-baseline: middle;
-    pointer-events: none;
-    fill: #2c3e50;
-    cursor: pointer;
-}
-
-.transition-label:hover {
-    background: #fffacd;
-    border-color: #2196f3;
-}
-
-g.transition-edge:hover .transition-label {
-    background: #fffacd;
-    border-color: #2196f3;
-}
-
-g.transition-edge.selected .transition-label {
-    background: #bbdefb;
-    border-color: #1976d2;
-    font-weight: 600;
-}
-
-/* ===== MÚLTIPLAS TRANSIÇÕES (BUNDLE) ===== */
-g.transition-bundle {
-    cursor: pointer;
-}
-
-.transition-bundle-label {
-    font-size: 11px;
-    background: white;
-    padding: 2px 4px;
-    border-radius: 2px;
-    border: 1px solid #ccc;
-    text-anchor: middle;
-    fill: #666;
-}
-
-/* ===== MARCADORES (MARKERS) ===== */
-marker#arrowhead {
-    fill: #2196f3;
-}
-
-marker#arrowhead polygon {
-    fill: #2196f3;
-}
-
-marker#arrowhead-temp {
-    fill: #999;
-}
-
-marker#arrowhead-temp polygon {
-    fill: #999;
-}
-
-marker#arrowhead-error {
-    fill: #f44336;
-}
-
-marker#arrowhead-error polygon {
-    fill: #f44336;
-}
-
-marker#arrowhead-success {
-    fill: #4caf50;
-}
-
-marker#arrowhead-success polygon {
-    fill: #4caf50;
-}
-
-/* ===== CAMINHO ANIMADO (Simulação) ===== */
-path.animation-path {
-    stroke: #4caf50;
-    stroke-width: 3;
-    fill: none;
-    marker-end: url(#arrowhead-success);
-    animation: pathFlow 0.8s ease-in-out;
-}
-
-path.error-path {
-    stroke: #f44336;
-    stroke-width: 3;
-    fill: none;
-    marker-end: url(#arrowhead-error);
-    animation: pathFlow 0.8s ease-in-out;
-}
-
-/* ===== ANIMAÇÕES ===== */
-@keyframes stateActive {
-    0%, 100% {
-        filter: drop-shadow(0 0 0px rgba(76, 175, 80, 0));
-    }
-    50% {
-        filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.8));
-    }
-}
-
-@keyframes pathFlow {
-    0% {
-        stroke-dasharray: 100;
-        stroke-dashoffset: 100;
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        stroke-dasharray: 100;
-        stroke-dashoffset: 0;
-        opacity: 0;
-    }
-}
-
-@keyframes pulseState {
-    0%, 100% {
-        r: 25px;
-        stroke-width: 2;
-    }
-    50% {
-        r: 27px;
-        stroke-width: 2.5;
-    }
-}
-
-/* ===== ZOOM E PAN ===== */
-.canvas-zoom-container {
-    transform-origin: center center;
-    transform: scale(1);
-    transition: transform 0.2s ease;
-}
-
-.canvas-zoom-in {
-    transform: scale(1.2);
-}
-
-.canvas-zoom-out {
-    transform: scale(0.8);
-}
-
-/* ===== FEEDBACK VISUAL - FEEDBACK ===== */
-g.state-node.invalid circle.state-circle {
-    stroke: #f44336;
-    fill: #ffebee;
-}
-
-g.transition-edge.invalid .transition-path {
-    stroke: #f44336;
-    stroke-dasharray: 3, 3;
-}
-
-g.state-node.valid circle.state-circle {
-    stroke: #4caf50;
-}
-
-/* ===== ESTADOS ESPECIAIS ===== */
-g.state-node.highlighted circle.state-circle {
-    fill: #fff9c4;
-    stroke: #fbc02d;
-    stroke-width: 3;
-}
-
-g.state-node.error circle.state-circle {
-    fill: #ffebee;
-    stroke: #f44336;
-    stroke-width: 3;
-}
-
-g.state-node.success circle.state-circle {
-    fill: #e8f5e9;
-    stroke: #4caf50;
-    stroke-width: 3;
+/* 🛡️ Bloquear menu contextual em todos os elementos internos do canvas */
+#canvas *,
+#canvas canvas,
+.cy-container,
+.cy-container * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 /* ===== CANVAS VAZIO ===== */
@@ -388,57 +70,39 @@ g.state-node.success circle.state-circle {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-    svg.canvas {
+    #canvas {
         background-size: 30px 30px;
-    }
-
-    .state-label {
-        font-size: 12px;
-    }
-
-    .transition-label {
-        font-size: 10px;
-    }
-
-    circle.state-circle {
-        r: 20px;
-    }
-
-    circle.state-circle.accept {
-        stroke-width: 3;
     }
 }
 
 @media (max-width: 480px) {
-    svg.canvas {
+    #canvas {
         background-image: none;
         background-color: white;
-    }
-
-    circle.state-circle {
-        r: 18px;
-    }
-
-    .state-label {
-        font-size: 11px;
-    }
-
-    .transition-label {
-        font-size: 9px;
-        padding: 1px 3px;
     }
 }
 
 /* ===== PRINT ===== */
 @media print {
-    svg.canvas {
+    #canvas {
         background-image: none;
         background-color: white;
     }
+}
 
-    .state-node:hover circle.state-circle,
-    .transition-edge:hover .transition-path {
-        filter: none;
-        stroke-width: 2;
-    }
+/* ===== FEEDBACK VISUAL PARA TRANSIÇÕES ===== */
+/* Classe adicionada ao estado de origem quando selecionando transição */
+.transition-source {
+    border: 3px solid #ff9800 !important;
+    background-color: #fff3e0 !important;
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.5) !important;
+}
+
+/* Animação para estados arrastáveis */
+.canvas node:active {
+    cursor: grabbing !important;
+}
+
+.canvas node {
+    cursor: grab;
 }
