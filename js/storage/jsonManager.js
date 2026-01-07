@@ -1,18 +1,8 @@
 class JSONManager {
-    /**
-     * Cria um novo gerenciador de JSON
-     * @param {CanvasManager} canvasManager - Gerenciador do canvas
-     */
     constructor(canvasManager) {
         this.canvas = canvasManager;
     }
 
-    /**
-     * Exporta autômato para JSON
-     * @param {string} name - Nome do autômato
-     * @param {string} type - Tipo do autômato ('dfa' ou 'nfa')
-     * @returns {string} String JSON
-     */
     exportToJSON(name = 'Autômato', type = 'dfa') {
         const data = {
             name: name,
@@ -26,11 +16,6 @@ class JSONManager {
         return JSON.stringify(data, null, 2);
     }
 
-    /**
-     * Importa autômato do JSON
-     * @param {string} jsonString - String JSON
-     * @returns {Object} Dados importados
-     */
     importFromJSON(jsonString) {
         try {
             const data = JSON.parse(jsonString);
@@ -42,10 +27,6 @@ class JSONManager {
         }
     }
 
-    /**
-     * Valida estrutura do JSON
-     * @private
-     */
     _validateJSON(data) {
         if (!data.states || !Array.isArray(data.states)) {
             throw new Error('Campo "states" não encontrado ou inválido');

@@ -1,8 +1,4 @@
 class ToolbarManager {
-    /**
-     * Cria um novo gerenciador de toolbar
-     * @param {CanvasManager} canvasManager - Gerenciador do canvas
-     */
     constructor(canvasManager) {
         this.canvas = canvasManager;
         this.currentMode = MODES.SELECT;
@@ -11,10 +7,6 @@ class ToolbarManager {
         this._initEventListeners();
     }
 
-    /**
-     * Inicializa event listeners dos botões
-     * @private
-     */
     _initEventListeners() {
         // Botão: Selecionar
         const selectBtn = document.getElementById('select-state-btn');
@@ -32,7 +24,6 @@ class ToolbarManager {
         const addTransitionBtn = document.getElementById('add-transition-btn');
         if (addTransitionBtn) {
             addTransitionBtn.addEventListener('click', () => {
-                console.log('🔗 Botão de transição clicado!');
                 this.setMode(MODES.ADD_TRANSITION);
             });
         }
@@ -41,10 +32,6 @@ class ToolbarManager {
         document.addEventListener('keydown', (e) => this._handleKeyboardShortcuts(e));
     }
 
-    /**
-     * Define o modo de operação
-     * @param {string} mode - Novo modo
-     */
     setMode(mode) {
         // Remover classe active de todos os botões
         document.querySelectorAll('.toolbar-btn').forEach(btn => {

@@ -1,40 +1,11 @@
-/**
- * ===== UNDO/REDO SYSTEM =====
- * 
- * Arquivo: js/features/undoRedo.js
- * 
- * PROPÓSITO:
- * Implementa sistema de desfazer/refazer ações no canvas.
- * Permite reverter e repetir operações como criar/deletar estados,
- * adicionar/remover transições, mover estados, etc.
- * 
- * PADRÃO DE DESIGN:
- * Command Pattern - cada ação é um comando que pode ser executado/revertido
- * 
- * FUNCIONALIDADES:
- * - Undo (Ctrl+Z): Desfazer última ação
- * - Redo (Ctrl+Y): Refazer ação desfeita
- * - Histórico com limite configurável
- * - Comandos: AddState, DeleteState, AddTransition, MoveState, etc.
- * 
- * COMO USAR:
- * 1. Incluir este arquivo no HTML
- * 2. Inicializar: const undoRedo = new UndoRedoManager(canvasManager);
- * 3. Registrar ações: undoRedo.execute(new AddStateCommand(...))
- * 4. Desfazer: undoRedo.undo()
- * 5. Refazer: undoRedo.redo()
- */
+// Sistema Undo/Redo usando Command Pattern
 
-// ===== CLASSE BASE DE COMANDO =====
+// Classe base de comando
 class Command {
     constructor(canvas) {
         this.canvas = canvas;
     }
 
-    /**
-     * Executa o comando
-     * @abstract
-     */
     execute() {
         throw new Error('Método execute() deve ser implementado');
     }
@@ -56,7 +27,6 @@ class Command {
     }
 }
 
-// ===== COMANDO: ADICIONAR ESTADO =====
 class AddStateCommand extends Command {
     constructor(canvas, x, y, label = null) {
         super(canvas);
@@ -130,7 +100,6 @@ class DeleteStateCommand extends Command {
     }
 }
 
-// ===== COMANDO: ADICIONAR TRANSIÇÃO =====
 class AddTransitionCommand extends Command {
     constructor(canvas, fromId, toId, symbols) {
         super(canvas);
@@ -158,7 +127,6 @@ class AddTransitionCommand extends Command {
     }
 }
 
-// ===== COMANDO: DELETAR TRANSIÇÃO =====
 class DeleteTransitionCommand extends Command {
     constructor(canvas, transition) {
         super(canvas);
@@ -186,7 +154,6 @@ class DeleteTransitionCommand extends Command {
     }
 }
 
-// ===== COMANDO: MOVER ESTADO =====
 class MoveStateCommand extends Command {
     constructor(canvas, stateId, oldX, oldY, newX, newY) {
         super(canvas);
@@ -217,7 +184,6 @@ class MoveStateCommand extends Command {
     }
 }
 
-// ===== COMANDO: ATUALIZAR ESTADO =====
 class UpdateStateCommand extends Command {
     constructor(canvas, stateId, oldData, newData) {
         super(canvas);
@@ -239,7 +205,6 @@ class UpdateStateCommand extends Command {
     }
 }
 
-// ===== COMANDO: LIMPAR TUDO =====
 class ClearAllCommand extends Command {
     constructor(canvas) {
         super(canvas);
@@ -263,13 +228,7 @@ class ClearAllCommand extends Command {
     }
 }
 
-// ===== GERENCIADOR DE UNDO/REDO =====
 class UndoRedoManager {
-    /**
-     * Cria um novo gerenciador de undo/redo
-     * @param {CanvasManager} canvasManager - Gerenciador do canvas
-     * @param {number} maxHistory - Tamanho máximo do histórico
-     */
     constructor(canvasManager, maxHistory = 50) {
         this.canvas = canvasManager;
         this.maxHistory = maxHistory;
@@ -281,10 +240,6 @@ class UndoRedoManager {
         this._updateUI();
     }
 
-    /**
-     * Inicializa atalhos de teclado
-     * @private
-     */
     _initKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
             // Ctrl+Z: Undo
@@ -301,10 +256,6 @@ class UndoRedoManager {
         });
     }
 
-    /**
-     * Executa um comando e adiciona ao histórico
-     * @param {Command} command - Comando a executar
-     */
     execute(command) {
         if (this.isExecuting) return;
 
@@ -327,9 +278,6 @@ class UndoRedoManager {
         log(`Executado: ${command.toString()}`, 'log');
     }
 
-    /**
-     * Desfaz última ação
-     */
     undo() {
         if (this.undoStack.length === 0) {
             showNotification('Nada para desfazer', 'info', 1500);
@@ -347,9 +295,6 @@ class UndoRedoManager {
         log(`Desfeito: ${command.toString()}`, 'log');
     }
 
-    /**
-     * Refaz última ação desfeita
-     */
     redo() {
         if (this.redoStack.length === 0) {
             showNotification('Nada para refazer', 'info', 1500);
@@ -367,9 +312,6 @@ class UndoRedoManager {
         log(`Refeito: ${command.toString()}`, 'log');
     }
 
-    /**
-     * Limpa todo o histórico
-     */
     clear() {
         this.undoStack = [];
         this.redoStack = [];
@@ -377,42 +319,22 @@ class UndoRedoManager {
         log('Histórico limpo', 'log');
     }
 
-    /**
-     * Verifica se pode desfazer
-     * @returns {boolean}
-     */
     canUndo() {
         return this.undoStack.length > 0;
     }
 
-    /**
-     * Verifica se pode refazer
-     * @returns {boolean}
-     */
     canRedo() {
         return this.redoStack.length > 0;
     }
 
-    /**
-     * Obtém histórico de undo
-     * @returns {Array<Command>}
-     */
     getUndoHistory() {
         return this.undoStack.map(cmd => cmd.toString());
     }
 
-    /**
-     * Obtém histórico de redo
-     * @returns {Array<Command>}
-     */
     getRedoHistory() {
         return this.redoStack.map(cmd => cmd.toString());
     }
 
-    /**
-     * Atualiza UI (botões, etc.)
-     * @private
-     */
     _updateUI() {
         // Atualizar botões se existirem
         const undoBtn = document.getElementById('btn-undo');
@@ -433,49 +355,8 @@ class UndoRedoManager {
         }
     }
 
-    /**
-     * Verifica se está executando comando
-     * @returns {boolean}
-     */
     isExecutingCommand() {
         return this.isExecuting;
     }
 }
 
-/**
- * EXEMPLO DE USO:
- * 
- * // No main.js, após criar CanvasManager:
- * APP.undoRedo = new UndoRedoManager(APP.canvas);
- * 
- * // Ao adicionar estado:
- * const cmd = new AddStateCommand(APP.canvas, x, y);
- * APP.undoRedo.execute(cmd);
- * 
- * // Ao deletar estado:
- * const cmd = new DeleteStateCommand(APP.canvas, stateId);
- * APP.undoRedo.execute(cmd);
- * 
- * // Ao mover estado:
- * const cmd = new MoveStateCommand(APP.canvas, stateId, oldX, oldY, newX, newY);
- * APP.undoRedo.execute(cmd);
- * 
- * // Desfazer/Refazer:
- * APP.undoRedo.undo();
- * APP.undoRedo.redo();
- * 
- * // Verificar status:
- * console.log('Pode desfazer?', APP.undoRedo.canUndo());
- * console.log('Histórico:', APP.undoRedo.getUndoHistory());
- */
-
-/**
- * BOTÕES NA TOOLBAR (adicionar ao HTML):
- * 
- * <button class="toolbar-btn" id="btn-undo" disabled>
- *   ↩️ Desfazer
- * </button>
- * <button class="toolbar-btn" id="btn-redo" disabled>
- *   ↪️ Refazer
- * </button>
- */

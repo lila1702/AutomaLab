@@ -1,4 +1,5 @@
-// ===== CONFIGURAÇÕES DO CANVAS =====
+// Configurações e constantes
+
 const CONFIG = {
     CANVAS: {
         STATE_RADIUS: 25,
@@ -7,7 +8,6 @@ const CONFIG = {
         MIN_DISTANCE: 80,
     },
 
-    // Cores do aplicativo
     COLORS: {
         primary: '#2196f3',
         secondary: '#f5f5f5',
@@ -40,9 +40,7 @@ const CONFIG = {
     },
 };
 
-// ===== MENSAGENS DO APLICATIVO =====
 const MESSAGES = {
-    // Sucesso
     SUCCESS: {
         STATE_CREATED: 'Estado criado com sucesso',
         STATE_UPDATED: 'Estado atualizado com sucesso',
@@ -69,8 +67,8 @@ const MESSAGES = {
 
     // Simulação
     SIMULATOR: {
-        CHAIN_ACCEPTED: '✓ Cadeia ACEITA',
-        CHAIN_REJECTED: '✗ Cadeia REJEITADA',
+        CHAIN_ACCEPTED: 'Cadeia ACEITA',
+        CHAIN_REJECTED: 'Cadeia REJEITADA',
         EMPTY_CHAIN: 'Cadeia vazia',
         NO_TRANSITION: 'Sem transição disponível',
     },
@@ -92,7 +90,6 @@ const MESSAGES = {
     },
 };
 
-// ===== MODOS DE OPERAÇÃO =====
 const MODES = {
     SELECT: 'select',
     ADD_STATE: 'add-state',

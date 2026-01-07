@@ -1,8 +1,4 @@
 class Simulator {
-    /**
-     * Cria um novo simulador
-     * @param {CanvasManager} canvasManager - Gerenciador do canvas
-     */
     constructor(canvasManager) {
         this.canvas = canvasManager;
         this.currentState = null;
@@ -10,12 +6,6 @@ class Simulator {
         this.stepHistory = [];
     }
 
-    /**
-     * Simula uma cadeia no AFD
-     * @param {string} chain - Cadeia a simular
-     * @param {string} automataType - 'dfa' ou 'nfa'
-     * @returns {Object} Resultado da simulação
-     */
     simulate(chain, automataType = 'dfa') {
         // Validações
         if (this.canvas.states.size === 0) {
@@ -41,10 +31,6 @@ class Simulator {
         }
     }
 
-    /**
-     * Simula cadeia em AFD
-     * @private
-     */
     _simulateDFA(chain) {
         let currentStateId = this.canvas.initialState;
         const steps = [];
@@ -103,10 +89,6 @@ class Simulator {
         return this._createResult(isAccepted, message, steps);
     }
 
-    /**
-     * Simula cadeia em AFN
-     * @private
-     */
     _simulateNFA(chain) {
         let activeStates = new Set([this.canvas.initialState]);
         const steps = [];
@@ -188,10 +170,6 @@ class Simulator {
         return this._createResult(isAccepted, message, steps);
     }
 
-    /**
-     * Cria objeto resultado
-     * @private
-     */
     _createResult(accepted, message, steps = []) {
         return {
             accepted,
@@ -201,19 +179,10 @@ class Simulator {
         };
     }
 
-    /**
-     * Obtém histórico de passos
-     * @returns {Array} Array de passos
-     */
     getStepHistory() {
         return this.stepHistory;
     }
 
-    /**
-     * Obtém descrição textual do resultado
-     * @param {Object} result - Resultado da simulação
-     * @returns {string} Descrição
-     */
     getResultDescription(result) {
         const stepCount = result.steps.length;
         const baseMsg = result.message;

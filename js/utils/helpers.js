@@ -1,9 +1,5 @@
-/**
- * Converte coordenadas do mouse para coordenadas do canvas SVG
- * @param {MouseEvent} event - Evento do mouse
- * @param {SVGElement} svg - Elemento SVG
- * @returns {Object} {x, y} - Coordenadas no canvas
- */
+// Utilitários diversos
+
 function getCanvasCoords(event, svg = null) {
     svg = svg || document.getElementById('canvas');
     if (!svg) return { x: 0, y: 0 };
@@ -15,80 +11,39 @@ function getCanvasCoords(event, svg = null) {
     };
 }
 
-/**
- * Calcula distância entre dois pontos
- * @param {Object} p1 - {x, y}
- * @param {Object} p2 - {x, y}
- * @returns {number} Distância
- */
 function distance(p1, p2) {
     const dx = p1.x - p2.x;
     const dy = p1.y - p2.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-/**
- * Calcula ângulo entre dois pontos
- * @param {Object} p1 - {x, y}
- * @param {Object} p2 - {x, y}
- * @returns {number} Ângulo em radianos
- */
 function angle(p1, p2) {
     return Math.atan2(p2.y - p1.y, p2.x - p1.x);
 }
 
-/**
- * Converte ângulo de radianos para graus
- * @param {number} radians - Ângulo em radianos
- * @returns {number} Ângulo em graus
- */
 function radiansToDegrees(radians) {
     return (radians * 180) / Math.PI;
 }
 
-/**
- * Converte ângulo de graus para radianos
- * @param {number} degrees - Ângulo em graus
- * @returns {number} Ângulo em radianos
- */
 function degreesToRadians(degrees) {
     return (degrees * Math.PI) / 180;
 }
 
-/**
- * Valida nome de estado
- * @param {string} name - Nome do estado
- * @returns {boolean} True se válido
- */
 function isValidStateName(name) {
     if (!name || typeof name !== 'string') return false;
     return VALIDATION.STATE_NAME_REGEX.test(name);
 }
 
-/**
- * Valida símbolo de transição
- * @param {string} symbol - Símbolo
- * @returns {boolean} True se válido
- */
 function isValidSymbol(symbol) {
     if (!symbol || typeof symbol !== 'string') return false;
     return VALIDATION.SYMBOL_REGEX.test(symbol) || symbol === SPECIAL_CHARS.EPSILON;
 }
 
-/**
- * Valida cadeia de entrada
- * @param {string} chain - Cadeia
- * @returns {boolean} True se válida
- */
 function isValidChain(chain) {
     if (typeof chain !== 'string') return false;
     return VALIDATION.CHAIN_REGEX.test(chain);
 }
 
-/**
- * Gera ID único
- * @returns {string} ID único
- */
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = (Math.random() * 16) | 0;
@@ -97,11 +52,6 @@ function generateUUID() {
     });
 }
 
-/**
- * Clona objeto profundamente
- * @param {Object} obj - Objeto a clonar
- * @returns {Object} Cópia do objeto
- */
 function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj.getTime());
@@ -117,22 +67,12 @@ function deepClone(obj) {
     }
 }
 
-/**
- * Sanitiza string para HTML
- * @param {string} str - String a sanitizar
- * @returns {string} String sanitizada
- */
 function sanitizeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
 }
 
-/**
- * Formata data para string legível
- * @param {Date} date - Data
- * @returns {string} Data formatada
- */
 function formatDate(date) {
     const d = new Date(date);
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -143,12 +83,6 @@ function formatDate(date) {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
-/**
- * Mostra notificação/toast
- * @param {string} message - Mensagem
- * @param {string} type - 'success', 'error', 'warning', 'info'
- * @param {number} duration - Duração em ms
- */
 function showNotification(message, type = 'info', duration = 3000) {
     // Criar elemento
     const notification = document.createElement('div');
@@ -182,11 +116,6 @@ function showNotification(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
-/**
- * Mostra confirmação
- * @param {string} message - Mensagem
- * @returns {Promise<boolean>} True se confirmado
- */
 function showConfirmation(message) {
     return new Promise(resolve => {
         if (confirm(message)) {
@@ -197,21 +126,10 @@ function showConfirmation(message) {
     });
 }
 
-/**
- * Aguarda tempo especificado
- * @param {number} ms - Milissegundos
- * @returns {Promise}
- */
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Debounce de função
- * @param {Function} func - Função
- * @param {number} wait - Tempo de espera
- * @returns {Function} Função debounced
- */
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -224,12 +142,6 @@ function debounce(func, wait) {
     };
 }
 
-/**
- * Throttle de função
- * @param {Function} func - Função
- * @param {number} limit - Tempo limite
- * @returns {Function} Função throttled
- */
 function throttle(func, limit) {
     let inThrottle;
     return function (...args) {
@@ -241,11 +153,6 @@ function throttle(func, limit) {
     };
 }
 
-/**
- * Verifica se elemento está visível na viewport
- * @param {Element} element - Elemento
- * @returns {boolean} True se visível
- */
 function isElementVisible(element) {
     const rect = element.getBoundingClientRect();
     return (
@@ -256,11 +163,6 @@ function isElementVisible(element) {
     );
 }
 
-/**
- * Copia texto para clipboard
- * @param {string} text - Texto a copiar
- * @returns {Promise<boolean>} True se copiado
- */
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
@@ -271,12 +173,6 @@ async function copyToClipboard(text) {
     }
 }
 
-/**
- * Calcula ponto intermediário entre dois pontos
- * @param {Object} p1 - {x, y}
- * @param {Object} p2 - {x, y}
- * @returns {Object} Ponto intermediário
- */
 function midpoint(p1, p2) {
     return {
         x: (p1.x + p2.x) / 2,
@@ -284,13 +180,6 @@ function midpoint(p1, p2) {
     };
 }
 
-/**
- * Calcula offset de ponto a uma distância em uma direção
- * @param {Object} point - {x, y}
- * @param {number} angle - Ângulo em radianos
- * @param {number} distance - Distância
- * @returns {Object} Novo ponto
- */
 function offsetPoint(point, angle, distance) {
     return {
         x: point.x + Math.cos(angle) * distance,
@@ -298,22 +187,11 @@ function offsetPoint(point, angle, distance) {
     };
 }
 
-/**
- * Verifica colisão entre dois círculos
- * @param {Object} c1 - {x, y, r}
- * @param {Object} c2 - {x, y, r}
- * @returns {boolean} True se colidem
- */
 function circlesCollide(c1, c2) {
     const dist = distance(c1, c2);
     return dist < c1.r + c2.r;
 }
 
-/**
- * Log com timestamp
- * @param {string} message - Mensagem
- * @param {string} level - 'log', 'warn', 'error'
- */
 function log(message, level = 'log') {
     const timestamp = new Date().toLocaleTimeString();
     console[level](`[${timestamp}] ${message}`);

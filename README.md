@@ -1,27 +1,23 @@
-# 🎓 AutomaLab
+# AutomaLab
 
 **Editor web interativo de Autômatos Finitos para fins didáticos**
 
-![Status](https://img.shields.io/badge/Status-50%25%20Completo-purple)
-![Versão](https://img.shields.io/badge/Versão-0.1-blue)
-![Licença](https://img.shields.io/badge/Licença-MIT-green)
-
-## 📋 Sobre o Projeto
+## Sobre o Projeto
 
 AutomaLab é uma ferramenta web para criar, visualizar, editar, simular e analisar **Autômatos Finitos** (no momento, AFD e AFND). Está planejado para ele também conseguir manusear Autômatos com Pilha (PDA) e Máquinas de Turing. Inspirado pelo JFLAP, o AutomaLab foca em simplicidade e usabilidade para estudantes da disciplina de **Linguagens Formais e Autômatos (LFA)**, especialmente na Universidade Federal do Ceará (UFC).
 
-### ✨ Principais Características
+### Principais Características
 
-- 🖱️ **Interface Visual Intuitiva**: Drag-and-drop de estados
-- ⚡ **Simulação em Tempo Real**: Teste cadeias instantaneamente
-- 💾 **Export/Import JSON**: Salve e compartilhe seus autômatos
-- ↩️ **Undo/Redo Completo**: Desfaça e refaça qualquer ação
-- 🔍 **Zoom e Pan**: Navegue em autômatos grandes
-- ⌨️ **Atalhos de Teclado**: Para facilitar o manuseio
+- Interface Visual Intuitiva: Drag-and-drop de estados
+- Simulação em Tempo Real: Teste cadeias instantaneamente
+- Export/Import JSON: Salve e compartilhe seus autômatos
+- Undo/Redo Completo: Desfaça e refaça qualquer ação
+- Zoom e Pan: Navegue em autômatos grandes
+- Atalhos de Teclado: Para facilitar o manuseio
 
 ---
 
-## 🚀 Como Usar
+## Como Usar
 
 ### Opção 1: Abrir Direto no Navegador
 
@@ -39,7 +35,7 @@ git clone https://github.com/lila1702/AutomaLab.git
 
 ---
 
-## 🎮 Tutorial Rápido
+## Tutorial Rápido
 
 ### Criar um Autômato Simples
 
@@ -64,9 +60,9 @@ git clone https://github.com/lila1702/AutomaLab.git
 4. **Simular Cadeia**
    - No painel "Simulador", digite uma cadeia: `aabb`
    - Clique "▶ Simular"
-   - Veja se foi **ACEITA** ✓ ou **REJEITADA** ✗
+   - Veja se foi aceita ou rejeitada
 
-## ⌨️ Atalhos de Teclado
+## Atalhos de Teclado
 
 ### Modos de Operação
 | Atalho | Ação |
@@ -104,7 +100,7 @@ git clone https://github.com/lila1702/AutomaLab.git
 
 ---
 
-## 🧩 Arquitetura
+## Arquitetura
 
 ### Padrão MVC Adaptado
 
@@ -130,9 +126,9 @@ git clone https://github.com/lila1702/AutomaLab.git
 
 ---
 
-## 📊 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
-### ✅ Completo (90%)
+### Completo (90%)
 
 - [x] Criar, editar e deletar estados
 - [x] Criar, editar e deletar transições
@@ -151,7 +147,7 @@ git clone https://github.com/lila1702/AutomaLab.git
 - [x] Interface responsiva
 - [x] Snap to grid (opcional)
 
-### ⏳ Pendente (10%)
+### Pendente (10%)
 
 - [ ] Conversão AFN → AFD
 - [ ] Minimização de autômatos

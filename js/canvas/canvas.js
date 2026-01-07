@@ -9,7 +9,6 @@ class CanvasManager {
         this.cy = cytoscape({
             container: document.getElementById(canvasId),
             
-            // ===== ESTILOS VISUAIS =====
             style: [
                 // Estados (nodes)
                 {
@@ -122,15 +121,12 @@ class CanvasManager {
         // Eventos
         this._initEventListeners();
         
-        // ===== 🚨 SOLUÇÃO RADICAL: OVERLAY INVISÍVEL =====
         const container = this.cy.container();
         
-        // Bloquear TUDO no container
         container.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            console.log('🛡️ Bloqueado no container!');
             return false;
         }, true);
         
@@ -144,18 +140,10 @@ class CanvasManager {
         container.style.webkitUserSelect = 'none';
         container.style.mozUserSelect = 'none';
         
-        console.log('✅ CanvasManager inicializado com Cytoscape');
+        console.log('CanvasManager inicializado');
     }
 
-    /**
-     * Inicializa event listeners
-     * @private
-     */
     _initEventListeners() {
-        // NOTA: Handler de click em estados foi movido para main.js
-        // para evitar conflitos com lógica de transições
-
-        // Click em transição
         this.cy.on('tap', 'edge', (evt) => {
             const edge = evt.target;
             console.log(`Transição clicada: ${edge.data('label')}`);
@@ -196,12 +184,9 @@ class CanvasManager {
             evt.preventDefault();
             evt.stopPropagation();
             
-            // Obter posição do mouse na tela
             const originalEvent = evt.originalEvent;
             const clientX = originalEvent ? originalEvent.clientX : window.innerWidth / 2;
             const clientY = originalEvent ? originalEvent.clientY : window.innerHeight / 2;
-            
-            console.log('🖱️ Clique direito em estado', stateId);
             
             // ✅ CAMADA 3: Abrir context modal
             if (typeof APP !== 'undefined' && APP.contextModal) {
@@ -239,17 +224,8 @@ class CanvasManager {
                 }
             }
         });
-        
-        console.log('✅ CanvasManager inicializado com Cytoscape');
     }
 
-    /**
-     * Cria um novo estado
-     * @param {number} x - Posição X
-     * @param {number} y - Posição Y
-     * @param {string} label - Label do estado (opcional)
-     * @returns {StateNode} Novo estado (formato compatível)
-     */
     addState(x, y, label = null) {
         const stateId = this.nextStateId;
         const stateLabel = label || `q${stateId}`;
@@ -278,14 +254,9 @@ class CanvasManager {
         this._updateStats();
         this._dispatchEvent(EVENTS.CANVAS_STATE_CREATED, { state });
         
-        console.log(`✅ Estado ${stateLabel} criado`);
         return state;
     }
 
-    /**
-     * Remove um estado
-     * @param {number} stateId - ID do estado
-     */
     removeState(stateId) {
         const node = this.cy.$(`#state-${stateId}`);
         if (node.length === 0) return;
@@ -312,15 +283,8 @@ class CanvasManager {
 
         this._updateStats();
         this._dispatchEvent(EVENTS.CANVAS_STATE_DELETED, { stateId });
-        
-        console.log(`❌ Estado ${stateId} removido`);
     }
 
-    /**
-     * Atualiza um estado
-     * @param {number} stateId - ID do estado
-     * @param {Object} updates - Propriedades a atualizar
-     */
     updateState(stateId, updates) {
         const node = this.cy.$(`#state-${stateId}`);
         if (node.length === 0) return;
@@ -375,8 +339,6 @@ class CanvasManager {
         this._dispatchEvent(EVENTS.CANVAS_STATE_UPDATED, { 
             state: this.states.get(stateId) 
         });
-        
-        console.log(`✏️ Estado ${stateId} atualizado`);
     }
 
     /**
@@ -405,7 +367,6 @@ class CanvasManager {
             const trans = this.transitions.find(t => t.fromId === fromId && t.toId === toId);
             if (trans) trans.symbols = symbols;
             
-            console.log(`✏️ Transição ${fromId}→${toId} atualizada`);
             return trans;
         }
 
@@ -429,7 +390,6 @@ class CanvasManager {
         this._updateStats();
         this._dispatchEvent(EVENTS.CANVAS_TRANSITION_CREATED, { transition });
         
-        console.log(`✅ Transição ${fromId}→${toId} [${label}] criada`);
         return transition;
     }
 
@@ -452,8 +412,6 @@ class CanvasManager {
 
         this._updateStats();
         this._dispatchEvent(EVENTS.CANVAS_TRANSITION_DELETED, { transition });
-        
-        console.log(`❌ Transição removida`);
     }
 
     /**
@@ -471,8 +429,6 @@ class CanvasManager {
 
         this._updateStats();
         this._dispatchEvent(EVENTS.CANVAS_CLEARED);
-        
-        console.log('🗑️ Canvas limpo');
     }
 
     /**
@@ -639,7 +595,6 @@ class CanvasManager {
         this.initialState = data.initialState;
 
         this._updateStats();
-        console.log('📥 Dados importados');
     }
 
     // ===== MÉTODOS EXTRAS (NOVOS!) =====
@@ -659,8 +614,6 @@ class CanvasManager {
         
         // Atualizar posições no mapa auxiliar
         this._syncMapsFromCytoscape();
-        
-        console.log(`📐 Layout ${algorithm} aplicado`);
     }
 
     /**
@@ -668,7 +621,6 @@ class CanvasManager {
      */
     fitView() {
         this.cy.fit(null, 50);
-        console.log('🔍 Visualização ajustada');
     }
 
     /**
@@ -700,12 +652,6 @@ class CanvasManager {
         }
     }
 
-    // ===== MÉTODOS PRIVADOS =====
-
-    /**
-     * Atualiza estatísticas no header
-     * @private
-     */
     _updateStats() {
         const stateCountEl = document.getElementById('state-count');
         const transCountEl = document.getElementById('transition-count');
@@ -718,10 +664,6 @@ class CanvasManager {
         }
     }
 
-    /**
-     * Converte nó Cytoscape para StateNode
-     * @private
-     */
     _nodeToState(node) {
         const pos = node.position();
         const stateId = node.data('stateId');
@@ -738,10 +680,6 @@ class CanvasManager {
         return state;
     }
 
-    /**
-     * Atualiza estado no mapa após drag
-     * @private
-     */
     _updateStateInMap(node) {
         const stateId = node.data('stateId');
         const state = this.states.get(stateId);
@@ -752,10 +690,6 @@ class CanvasManager {
         }
     }
 
-    /**
-     * Sincroniza mapas auxiliares com Cytoscape
-     * @private
-     */
     _syncMapsFromCytoscape() {
         // Atualizar posições dos estados
         this.cy.nodes().forEach(node => {
@@ -763,10 +697,6 @@ class CanvasManager {
         });
     }
 
-    /**
-     * Dispara evento customizado
-     * @private
-     */
     _dispatchEvent(eventName, detail) {
         const event = new CustomEvent(eventName, { detail });
         window.dispatchEvent(event);
