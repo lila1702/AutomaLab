@@ -261,10 +261,10 @@ copies of the Software...
 
 ## 🌟 Agradecimentos
 
-**Inspiração:** JFLAP - Duke University
-**Orientação:** Prof. Cenez Araújo de Andrade (UFC)
-**Tecnologias:** Cytoscape.js, comunidade open-source
-**Disciplina:** LFA - Linguagens Formais e Autômatos (UFC)
+- **Inspiração:** JFLAP - Duke University
+- **Orientação:** Prof. Cenez Araújo de Andrade (UFC)
+- **Tecnologias:** Cytoscape.js, comunidade open-source
+- **Disciplina:** LFA - Linguagens Formais e Autômatos (UFC)
 
 ---
 
