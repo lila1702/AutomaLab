@@ -34,7 +34,14 @@ AutomaLab é uma ferramenta web para criar, visualizar, editar, simular e analis
 3. Pronto! Nenhuma instalação ou servidor necessário
 
 ```bash
+# Clone o repositório
 git clone https://github.com/lila1702/AutomaLab.git
+
+# Entre na pasta
+cd AutomaLab
+
+# Abra o index.html no navegador
+# Nenhuma instalação ou servidor necessário!
 ```
 
 ---
@@ -130,38 +137,48 @@ git clone https://github.com/lila1702/AutomaLab.git
 
 ---
 
-## 📊 Funcionalidades Implementadas
+## 📊 Status do Desenvolvimento (50%)
 
-### ✅ Completo (90%)
+### Core Funcional (100%)
 
-- [x] Criar, editar e deletar estados
-- [x] Criar, editar e deletar transições
-- [x] Marcar estado inicial e de aceitação
-- [x] Simulação de AFD (Determinístico)
-- [x] Simulação de AFN (Não-determinístico)
-- [x] Feedback visual de aceitação/rejeição
-- [x] Export/Import JSON
-- [x] Drag-and-drop de estados
-- [x] Undo/Redo completo
-- [x] Zoom in/out com scroll
-- [x] Pan (arrastar canvas)
-- [x] Context menu (clique direito)
-- [x] Validação de entrada
-- [x] Atalhos de teclado
-- [x] Interface responsiva
-- [x] Snap to grid (opcional)
+ - [X] Criar, editar e deletar estados
+ - [X] Criar, editar e deletar transições
+ - [X] Marcar estado inicial e de aceitação
+ - [X] Drag-and-drop de estados (Cytoscape nativo)
+ - [X] Context menu (clique direito) para alteração dos estados
+ - [X] Export/Import JSON completo
+ - [X] Responsividade
 
-### ⏳ Pendente (10%)
+### Simulação (80%)
 
-- [ ] Conversão AFN → AFD
-- [ ] Minimização de autômatos
-- [ ] Detecção de equivalência
-- [ ] Animação passo-a-passo visual
-- [ ] Múltiplas transições paralelas
-- [ ] Gramáticas formais
-- [ ] Autômatos com pilha (PDA)
-- [ ] Máquinas de Turing
-- [ ] Testes automatizados
+- [X] Simulação de AFD (Determinístico)
+- [X] Simulação de AFND (Não-determinístico) básica
+- [X] Feedback visual de aceitação/rejeição
+- [ ] Transições epsilon (ε)
+- [ ] Validação de determinismo
+- [ ] Animação visual passo-a-passo
+
+### Controles (100%)
+
+- [X] Zoom in/out com scroll e botões
+- [X] Pan (arrastar canvas) nativo
+- [X] Reset de visualização
+- [X] Ajustar ao conteúdo (fit)
+
+### Histórico (100%)
+
+- [X] Undo/Redo completo (Command Pattern)
+- [X] Até 50 ações no histórico
+- [X] Botões e atalhos de teclado
+- [X] Estados sincronizados
+
+### Validações (70%)
+
+- [X] Validação de nomes de estados
+- [X] Validação de símbolos
+- [X] Validação de cadeias
+ - [ ] Validação de AFD vs AFND
+ - [ ] Detecção de estados inalcançáveis
 
 ---
 
@@ -244,9 +261,10 @@ copies of the Software...
 
 ## 🌟 Agradecimentos
 
-- Inspirado no [JFLAP](http://www.jflap.org/)
-- Baseado nos requisitos de disciplinas de LFA
-- Ao professor Cenez Araújo de Andrade
+**Inspiração:** JFLAP - Duke University
+**Orientação:** Prof. Cenez Araújo de Andrade (UFC)
+**Tecnologias:** Cytoscape.js, comunidade open-source
+**Disciplina:** LFA - Linguagens Formais e Autômatos (UFC)
 
 ---
 
