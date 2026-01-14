@@ -18,6 +18,7 @@ const APP = {
     dragDrop: null,
     undoRedo: null,
     zoomPan: null,
+    tapeManager: null,
     currentMode: MODES.SELECT,
     automataType: 'dfa',
     automataName: 'Autômato 1',
@@ -45,6 +46,9 @@ function initializeApp() {
 
         // Undo/Redo
         APP.undoRedo = new UndoRedoManager(APP.canvas, 50);
+        
+        // TapeManager (após criar simulator)
+        APP.tapeManager = new TapeManager(APP.simulator);
 
         wait(100).then(() => {
             APP.contextModal = new ContextModalManager(APP.canvas);
@@ -326,20 +330,22 @@ function initializeSimulatorUI() {
     if (simButton) {
         simButton.addEventListener('click', () => {
             const chain = simInput.value;
-            runSimulation(chain);
+            runSimulation(chain, true); // Simulação com animação
         });
     }
 
     if (simInput) {
         simInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                runSimulation(simInput.value);
+                runSimulation(simInput.value, true); // Simulação com animação
             }
         });
     }
 }
 
-function runSimulation(chain) {
+function runSimulation(chain, animated = false) {
+    console.log('🎯 runSimulation chamado:', { chain, animated });
+    
     // Validações
     if (APP.canvas.states.size === 0) {
         showNotification(MESSAGES.ERROR.NO_STATES, 'warning', 3000);
@@ -353,8 +359,17 @@ function runSimulation(chain) {
 
     // Simular
     const result = APP.simulator.simulate(chain, APP.automataType);
+    console.log('📊 Resultado da simulação:', result);
     
-    // Exibir resultado
+    // Modo animado
+    if (animated && result.steps && result.steps.length > 0) {
+        console.log('🎬 Iniciando modo animado...');
+        APP.tapeManager.initialize(chain, result.steps);
+        showNotification('🎬 Simulação iniciada! Use os controles da fita.', 'info', 3000);
+        return;
+    }
+    
+    // Modo instantâneo (existente)
     const simOutput = document.getElementById('simOutput');
     if (simOutput) {
         simOutput.textContent = APP.simulator.getResultDescription(result);

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/toolbar.css">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/context-modal.css">
+    <link rel="stylesheet" href="css/tape.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
 </head>
@@ -111,6 +112,34 @@
             <!-- WORKSPACE -->
             <div class="workspace">
                 <div id="canvas" class="canvas"></div>
+                
+                <!-- FITA DE SIMULAÇÃO -->
+                <div class="tape-container" id="tape-container" style="display: none;">
+                    <div class="tape-header">
+                        <span class="tape-title">Fita de Entrada</span>
+                        <div class="tape-controls">
+                            <button class="tape-btn" id="tape-step" title="Avançar um passo">⏭️</button>
+                            <button class="tape-btn" id="tape-play" title="Reproduzir automático">▶️</button>
+                            <button class="tape-btn" id="tape-pause" title="Pausar" style="display:none;">⏸️</button>
+                            <button class="tape-btn" id="tape-reset" title="Resetar">🔄</button>
+                            <span class="tape-speed">Velocidade: <input type="range" id="tape-speed" min="100" max="2000" value="800" step="100" style="width:60px; vertical-align:middle;"></span>
+                            <button class="tape-close" id="tape-close" title="Fechar fita (ESC)">✕</button>
+                        </div>
+                    </div>
+                    <div class="tape-track">
+                        <div class="tape-cells" id="tape-cells">
+                            <!-- Células geradas dinamicamente -->
+                        </div>
+                        <div class="tape-head" id="tape-head">
+                            <div class="tape-head-arrow">▼</div>
+                        </div>
+                    </div>
+                    <div class="tape-info" id="tape-info">
+                        <span>Estado: <strong id="tape-current-state">q0</strong></span>
+                        <span>Símbolo: <strong id="tape-current-symbol">-</strong></span>
+                        <span>Passo: <strong id="tape-current-step">0</strong></span>
+                    </div>
+                </div>
             </div>
 
             <!-- SIDEBAR -->
@@ -188,7 +217,7 @@
                                maxlength="100">
                         <button class="btn" id="btnSimulate" 
                                 style="min-width: 80px;"
-                                title="Simular cadeia (Enter)">
+                                title="Simular com animação (Enter)">
                             ▶ Simular
                         </button>
                     </div>
@@ -340,6 +369,7 @@
     
     <!-- 6. NOVAS FUNCIONALIDADES (Features) -->
     <script src="js/features/undoRedo.js"></script>
+    <script src="js/features/tapeManager.js"></script>
     
     <!-- 7. Main (por último) -->
     <script src="js/main.js"></script>

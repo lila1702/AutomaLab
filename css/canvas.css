@@ -6,8 +6,7 @@
     overflow: hidden;
     border: 1px solid #e0e0e0;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
 /* ===== CANVAS CYTOSCAPE ===== */
@@ -105,4 +104,26 @@
 
 .canvas node {
     cursor: grab;
+}
+
+.accept {
+    background-color: #65ff78 !important;
+    border-color: #177738 !important;
+    border-width: 6px !important;
+}
+
+/* ===== ANIMAÇÃO DE DESTAQUE DURANTE SIMULAÇÃO ===== */
+
+.cy-node.highlighted-state[background-color] {
+    background-color: #fff59d !important;
+}
+
+/* Pulso sutil amarelo */
+@keyframes highlightPulse {
+    0%, 100% {
+        background-color: #fff59d;
+    }
+    50% {
+        background-color: #ffeb3b;
+    }
 }

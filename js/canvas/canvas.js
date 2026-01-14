@@ -29,10 +29,12 @@ class CanvasManager {
                         'text-outline-color': 'white'
                     }
                 },
-                // Estado de aceitação (círculo duplo)
+                // Estado de aceitação (círculo duplo), verde claro com borda escura
                 {
                     selector: 'node.accept',
                     style: {
+                        'background-color': '#65ff78',
+                        'border-color': '#177738',
                         'border-width': 6
                     }
                 },
@@ -40,9 +42,18 @@ class CanvasManager {
                 {
                     selector: 'node.initial',
                     style: {
-                        'background-color': '#e8f5e9',
-                        'border-color': '#4caf50',
+                        'background-color': '#f0bb8b',
+                        'border-color': '#733f0f',
                         'border-width': 3
+                    }
+                },
+                // Estado destacado durante simulação (amarelo)
+                {
+                    selector: 'node.highlighted-state',
+                    style: {
+                        'background-color': '#fff59d',
+                        'transition-property': 'background-color',
+                        'transition-duration': '0.3s'
                     }
                 },
                 // Estado selecionado
@@ -161,10 +172,21 @@ class CanvasManager {
             }
         });
 
+        // Drag (durante o arrasto) - atualizar seta em tempo real
+        this.cy.on('drag', 'node', (evt) => {
+            const node = evt.target;
+            const stateId = node.data('stateId');
+            // Atualizar posição da seta inicial em tempo real
+            this.updateInitialArrowPosition(stateId);
+        });
+
         // Drag end (quando solta um estado)
         this.cy.on('free', 'node', (evt) => {
             const node = evt.target;
+            const stateId = node.data('stateId');
             this._updateStateInMap(node);
+            // Atualizar posição da seta inicial se for o estado inicial
+            this.updateInitialArrowPosition(stateId);
             console.log(`Estado ${node.data('label')} movido`);
         });
 
@@ -268,6 +290,7 @@ class CanvasManager {
 
         // Limpar estado inicial se necessário
         if (this.initialState === stateId) {
+            this.removeInitialArrow();
             this.initialState = null;
         }
 
@@ -299,13 +322,18 @@ class CanvasManager {
         // Atualizar estado inicial
         if (updates.hasOwnProperty('isInitial')) {
             if (updates.isInitial) {
-                // Remover initial de outros
+                // Remover seta inicial anterior
+                this.removeInitialArrow();
+                // Remover initial de outros estados
                 this.cy.nodes('.initial').removeClass('initial').data('isInitial', false);
                 node.addClass('initial').data('isInitial', true);
                 this.initialState = stateId;
+                // Adicionar seta inicial
+                this.addInitialArrow(stateId);
             } else {
                 node.removeClass('initial').data('isInitial', false);
                 if (this.initialState === stateId) {
+                    this.removeInitialArrow();
                     this.initialState = null;
                 }
             }
@@ -423,6 +451,7 @@ class CanvasManager {
         this.transitions = [];
         this.selectedState = null;
         this.selectedTransition = null;
+        this.removeInitialArrow();
         this.initialState = null;
         this.nextStateId = 0;
         this.tempTransitionStart = null;
@@ -521,11 +550,15 @@ class CanvasManager {
         const states = [];
         const transitions = [];
 
-        // Extrair estados do Cytoscape
+        // Extrair estados do Cytoscape (excluindo nó auxiliar da seta inicial)
         this.cy.nodes().forEach(node => {
+            const stateId = node.data('stateId');
+            // Ignorar nó auxiliar da seta inicial
+            if (stateId === undefined || node.id() === 'initial-arrow-start') return;
+            
             const pos = node.position();
             states.push({
-                id: node.data('stateId'),
+                id: stateId,
                 label: node.data('label'),
                 x: pos.x,
                 y: pos.y,
@@ -534,8 +567,11 @@ class CanvasManager {
             });
         });
 
-        // Extrair transições do Cytoscape
+        // Extrair transições do Cytoscape (excluindo edge da seta inicial)
         this.cy.edges().forEach(edge => {
+            // Ignorar edge da seta inicial
+            if (edge.id() === 'initial-arrow') return;
+            
             const sourceId = edge.source().data('stateId');
             const targetId = edge.target().data('stateId');
             transitions.push({
@@ -593,11 +629,99 @@ class CanvasManager {
 
         // Importar estado inicial
         this.initialState = data.initialState;
+        if (this.initialState !== null) {
+            this.addInitialArrow(this.initialState);
+        }
 
         this._updateStats();
     }
 
     // ===== MÉTODOS EXTRAS (NOVOS!) =====
+
+    /**
+     * Adiciona seta indicadora do estado inicial
+     * @param {number} stateId - ID do estado inicial
+     */
+    addInitialArrow(stateId) {
+        // Remover seta anterior se existir
+        this.removeInitialArrow();
+        
+        const node = this.cy.$(`#state-${stateId}`);
+        if (node.length === 0) return;
+        
+        const pos = node.position();
+        
+        // Criar nó invisível à esquerda
+        const startNode = this.cy.add({
+            group: 'nodes',
+            data: { id: 'initial-arrow-start', label: '' },
+            position: { x: pos.x - 80, y: pos.y },
+            grabbable: false,
+            selectable: false
+        });
+        
+        // Aplicar estilo após adicionar - nó muito pequeno e transparente
+        startNode.style({
+            'width': 1,
+            'height': 1,
+            'background-opacity': 0,
+            'border-width': 0
+        });
+        
+        // Criar edge (seta) do nó invisível para o inicial
+        const arrow = this.cy.add({
+            group: 'edges',
+            data: {
+                id: 'initial-arrow',
+                source: 'initial-arrow-start',
+                target: `state-${stateId}`,
+                label: ''
+            },
+            selectable: false
+        });
+        
+        // Aplicar estilo após adicionar
+        arrow.style({
+            'width': 3,
+            'line-color': '#4caf50',
+            'target-arrow-color': '#4caf50',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier'
+        });
+    }
+
+    /**
+     * Remove a seta indicadora do estado inicial
+     */
+    removeInitialArrow() {
+        // Remover edge
+        const arrow = this.cy.$('#initial-arrow');
+        if (arrow.length > 0) {
+            arrow.remove();
+        }
+        
+        // Remover nó invisível
+        const startNode = this.cy.$('#initial-arrow-start');
+        if (startNode.length > 0) {
+            startNode.remove();
+        }
+    }
+
+    /**
+     * Atualiza a posição da seta inicial quando o estado é movido
+     * @param {number} stateId - ID do estado
+     */
+    updateInitialArrowPosition(stateId) {
+        if (this.initialState !== stateId) return;
+        
+        const node = this.cy.$(`#state-${stateId}`);
+        const startNode = this.cy.$('#initial-arrow-start');
+        
+        if (node.length > 0 && startNode.length > 0) {
+            const pos = node.position();
+            startNode.position({ x: pos.x - 80, y: pos.y });
+        }
+    }
 
     /**
      * Auto-layout - organiza estados automaticamente
@@ -657,10 +781,18 @@ class CanvasManager {
         const transCountEl = document.getElementById('transition-count');
 
         if (stateCountEl) {
-            stateCountEl.textContent = `Estados: ${this.cy.nodes().length}`;
+            // Contar apenas estados reais (excluindo nó auxiliar)
+            const realStatesCount = this.cy.nodes().filter(node => {
+                return node.id() !== 'initial-arrow-start';
+            }).length;
+            stateCountEl.textContent = `Estados: ${realStatesCount}`;
         }
         if (transCountEl) {
-            transCountEl.textContent = `Transições: ${this.cy.edges().length}`;
+            // Contar apenas transições reais (excluindo seta inicial)
+            const realTransCount = this.cy.edges().filter(edge => {
+                return edge.id() !== 'initial-arrow';
+            }).length;
+            transCountEl.textContent = `Transições: ${realTransCount}`;
         }
     }
 
