@@ -106,24 +106,33 @@ class AddTransitionCommand extends Command {
         this.fromId = fromId;
         this.toId = toId;
         this.symbols = symbols;
-        this.transition = null;
+        this.transitions = [];
     }
 
     execute() {
-        this.transition = this.canvas.addTransition(this.fromId, this.toId, this.symbols);
-        return this.transition;
+        // Criar uma transição SEPARADA para cada símbolo
+        this.transitions = [];
+        this.symbols.forEach(symbol => {
+            const transition = this.canvas.addTransition(this.fromId, this.toId, [symbol]);
+            this.transitions.push(transition);
+        });
+        return this.transitions;
     }
 
     undo() {
-        if (this.transition) {
-            this.canvas.removeTransition(this.transition);
-        }
+        // Remover todas as transições criadas
+        this.transitions.forEach(transition => {
+            if (transition) {
+                this.canvas.removeTransition(transition);
+            }
+        });
     }
 
     toString() {
         const from = this.canvas.states.get(this.fromId);
         const to = this.canvas.states.get(this.toId);
-        return `Adicionar Transição ${from?.label || this.fromId} → ${to?.label || this.toId}`;
+        const symbolStr = this.symbols.join(',');
+        return `Adicionar Transição ${from?.label || this.fromId} → ${to?.label || this.toId} [${symbolStr}]`;
     }
 }
 

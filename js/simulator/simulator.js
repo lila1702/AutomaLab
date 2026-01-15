@@ -90,11 +90,21 @@ class Simulator {
     }
 
     _simulateNFA(chain) {
-        let activeStates = new Set([this.canvas.initialState]);
+        // Aplicar fechamento épsilon ao estado inicial
+        let activeStates = this._epsilonClosure(new Set([this.canvas.initialState]));
         const steps = [];
 
+        // Passo inicial: mostrar estados após fechamento épsilon
+        steps.push({
+            step: 0,
+            states: Array.from(activeStates),
+            symbol: 'início',
+            accepted: false,
+            transitions: [], // Sem transições no passo inicial
+        });
+
         // Cadeia vazia
-        if (chain === '') {
+        if (chain === '' || chain === 'ε' || chain === 'ϵ') {
             let isAccepted = false;
             for (const stateId of activeStates) {
                 if (this.canvas.states.get(stateId).isAccept) {
@@ -102,12 +112,8 @@ class Simulator {
                     break;
                 }
             }
-            steps.push({
-                step: 0,
-                states: Array.from(activeStates),
-                symbol: 'ε',
-                accepted: isAccepted,
-            });
+            // Atualizar passo inicial com resultado
+            steps[0].accepted = isAccepted;
             this.stepHistory = steps;
             return this._createResult(isAccepted, MESSAGES.SIMULATOR.EMPTY_CHAIN, steps);
         }
@@ -115,15 +121,30 @@ class Simulator {
         // Processar cada símbolo
         for (let i = 0; i < chain.length; i++) {
             const symbol = chain[i];
+            
+            // Ignorar símbolo épsilon na entrada (já processado no fechamento)
+            if (symbol === 'ε' || symbol === 'ϵ') {
+                continue;
+            }
+            
             const nextStates = new Set();
+            const transitionsTaken = []; // Rastrear todas as transições tomadas
 
-            // Encontrar todas as transições possíveis
+            // Encontrar todas as transições possíveis (exceto épsilon)
             for (const currentStateId of activeStates) {
                 const transitions = this.canvas.transitions.filter(
                     t => t.fromId === currentStateId && t.symbols.includes(symbol)
                 );
 
-                transitions.forEach(t => nextStates.add(t.toId));
+                transitions.forEach(t => {
+                    nextStates.add(t.toId);
+                    // Registrar esta transição
+                    transitionsTaken.push({
+                        from: currentStateId,
+                        to: t.toId,
+                        symbol: symbol
+                    });
+                });
             }
 
             if (nextStates.size === 0) {
@@ -134,12 +155,33 @@ class Simulator {
                     nextStates: [],
                     accepted: false,
                     error: MESSAGES.SIMULATOR.NO_TRANSITION,
+                    transitions: [],
                 });
                 this.stepHistory = steps;
                 return this._createResult(false, MESSAGES.SIMULATOR.CHAIN_REJECTED, steps);
             }
 
-            activeStates = nextStates;
+            // Aplicar fechamento épsilon aos próximos estados
+            const beforeEpsilon = new Set(nextStates);
+            activeStates = this._epsilonClosure(nextStates);
+            
+            // Registrar transições épsilon aplicadas
+            const epsilonTransitions = [];
+            for (const stateId of beforeEpsilon) {
+                const epsilonEdges = this.canvas.transitions.filter(
+                    t => t.fromId === stateId && (t.symbols.includes('ε') || t.symbols.includes('ϵ'))
+                );
+                epsilonEdges.forEach(t => {
+                    if (activeStates.has(t.toId)) {
+                        epsilonTransitions.push({
+                            from: stateId,
+                            to: t.toId,
+                            symbol: 'ε'
+                        });
+                    }
+                });
+            }
+            
             let stepAccepted = false;
             for (const stateId of activeStates) {
                 if (this.canvas.states.get(stateId).isAccept) {
@@ -151,8 +193,11 @@ class Simulator {
             steps.push({
                 step: i + 1,
                 states: Array.from(activeStates),
+                directStates: Array.from(beforeEpsilon), // 🆕 Estados alcançados diretamente (antes do epsilon)
                 symbol: symbol,
                 accepted: stepAccepted,
+                transitions: [...transitionsTaken, ...epsilonTransitions], // Todas as transições tomadas
+                nonDeterminism: transitionsTaken.length // Quantas rotas foram exploradas
             });
         }
 
@@ -168,6 +213,46 @@ class Simulator {
         this.stepHistory = steps;
         const message = isAccepted ? MESSAGES.SIMULATOR.CHAIN_ACCEPTED : MESSAGES.SIMULATOR.CHAIN_REJECTED;
         return this._createResult(isAccepted, message, steps);
+    }
+
+    /**
+     * Calcula o fechamento épsilon de um conjunto de estados
+     * Retorna todos os estados alcançáveis via transições ε
+     * @param {Set<number>} states - Conjunto de estados iniciais
+     * @returns {Set<number>} Fechamento épsilon dos estados
+     */
+    _epsilonClosure(states) {
+        const closure = new Set(states);
+        const stack = [...states];
+        
+        // Detectar loop infinito
+        let iterations = 0;
+        const maxIterations = this.canvas.states.size * 100;
+        
+        while (stack.length > 0) {
+            iterations++;
+            if (iterations > maxIterations) {
+                console.warn('Loop infinito detectado no fechamento épsilon');
+                break;
+            }
+            
+            const state = stack.pop();
+            
+            // Buscar todas as transições épsilon deste estado
+            const epsilonTransitions = this.canvas.transitions.filter(
+                t => t.fromId === state && (t.symbols.includes('ε') || t.symbols.includes('ϵ'))
+            );
+            
+            // Adicionar estados destino ao fechamento
+            epsilonTransitions.forEach(t => {
+                if (!closure.has(t.toId)) {
+                    closure.add(t.toId);
+                    stack.push(t.toId);
+                }
+            });
+        }
+        
+        return closure;
     }
 
     _createResult(accepted, message, steps = []) {

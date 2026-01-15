@@ -196,3 +196,38 @@ function log(message, level = 'log') {
     const timestamp = new Date().toLocaleTimeString();
     console[level](`[${timestamp}] ${message}`);
 }
+
+/**
+ * Converte strings comuns para o símbolo épsilon (ε)
+ * Permite que usuários digitem palavras em vez do símbolo direto
+ * @param {string} symbol - Símbolo a ser convertido
+ * @returns {string} Símbolo convertido (ε se for épsilon, original caso contrário)
+ */
+function convertToEpsilon(symbol) {
+    if (!symbol || typeof symbol !== 'string') return symbol;
+    
+    const trimmed = symbol.trim().toLowerCase();
+    
+    // Lista de strings que representam épsilon
+    const epsilonAliases = ['epsilon', 'eps', 'e', 'lambda', 'λ', ''];
+    
+    if (epsilonAliases.includes(trimmed)) {
+        return SPECIAL_CHARS.EPSILON; // ε
+    }
+    
+    return symbol.trim();
+}
+
+/**
+ * Processa array de símbolos, convertendo épsilon quando necessário
+ * @param {string} input - String com símbolos separados por vírgula
+ * @returns {Array<string>} Array de símbolos processados
+ */
+function parseSymbols(input) {
+    if (!input || typeof input !== 'string') return [];
+    
+    return input
+        .split(',')
+        .map(s => convertToEpsilon(s.trim()))
+        .filter(s => s.length > 0);
+}

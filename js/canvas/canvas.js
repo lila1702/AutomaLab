@@ -56,6 +56,28 @@ class CanvasManager {
                         'transition-duration': '0.3s'
                     }
                 },
+                // Estado alcançado DIRETAMENTE (sem epsilon) - amarelo intenso
+                {
+                    selector: 'node.highlighted-direct-state',
+                    style: {
+                        'background-color': '#ffeb3b',
+                        'border-color': '#f57f17',
+                        'border-width': 4,
+                        'transition-property': 'background-color, border-color, border-width',
+                        'transition-duration': '0.3s'
+                    }
+                },
+                // Estado alcançado por EPSILON-CLOSURE - azul escuro
+                {
+                    selector: 'node.highlighted-epsilon-state',
+                    style: {
+                        'background-color': '#64b5f6',
+                        'border-color': '#1976d2',
+                        'border-width': 3,
+                        'transition-property': 'background-color, border-color, border-width',
+                        'transition-duration': '0.3s'
+                    }
+                },
                 // Estado selecionado
                 {
                     selector: 'node:selected',
@@ -98,6 +120,18 @@ class CanvasManager {
                         'width': 3,
                         'line-color': '#1976d2',
                         'target-arrow-color': '#1976d2'
+                    }
+                },
+                // Transição destacada durante simulação (NOVO!)
+                {
+                    selector: 'edge.highlighted-transition',
+                    style: {
+                        'width': 4,
+                        'line-color': '#ff6f00',
+                        'target-arrow-color': '#ff6f00',
+                        'transition-property': 'line-color, target-arrow-color, width',
+                        'transition-duration': '0.3s',
+                        'z-index': 999
                     }
                 },
                 // Self-loop (transição para si mesmo)
@@ -228,12 +262,12 @@ class CanvasManager {
             
             // Prompt para editar símbolos
             const newSymbols = prompt(
-                'Digite os símbolos (separados por vírgula):',
+                'Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e',
                 symbols.join(',')
             );
             
             if (newSymbols !== null) {
-                const symbolArray = newSymbols.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                const symbolArray = parseSymbols(newSymbols);
                 if (symbolArray.length > 0) {
                     edge.data('label', symbolArray.join(','));
                     edge.data('symbols', symbolArray);
@@ -373,7 +407,7 @@ class CanvasManager {
      * Cria uma nova transição
      * @param {number} fromId - ID do estado de origem
      * @param {number} toId - ID do estado de destino
-     * @param {Array<string>} symbols - Símbolos da transição
+     * @param {Array<string>} symbols - Símbolos da transição (deve ter apenas 1 símbolo!)
      * @returns {TransitionEdge} Nova transição
      */
     addTransition(fromId, toId, symbols = []) {
@@ -381,24 +415,14 @@ class CanvasManager {
             throw new Error('Estados inválidos para transição');
         }
 
-        const edgeId = `edge-${fromId}-${toId}`;
+        // IMPORTANTE: Cada símbolo cria uma edge separada!
+        // Gerar ID único baseado no símbolo
+        const symbol = symbols[0]; // Deve ter apenas 1 símbolo
+        const symbolSafe = symbol.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitizar para ID
+        const edgeId = `edge-${fromId}-${toId}-${symbolSafe}-${Date.now()}`;
         const label = symbols.join(',');
 
-        // Verificar se já existe
-        const existing = this.cy.$(`#${edgeId}`);
-        if (existing.length > 0) {
-            // Atualizar símbolos
-            existing.data('label', label);
-            existing.data('symbols', symbols);
-            
-            // Atualizar no array também
-            const trans = this.transitions.find(t => t.fromId === fromId && t.toId === toId);
-            if (trans) trans.symbols = symbols;
-            
-            return trans;
-        }
-
-        // Criar nova transição
+        // Criar nova edge no Cytoscape
         this.cy.add({
             group: 'edges',
             data: {
@@ -406,7 +430,9 @@ class CanvasManager {
                 source: `state-${fromId}`,
                 target: `state-${toId}`,
                 label: label,
-                symbols: symbols
+                symbols: symbols,
+                fromId: fromId,  // Adicionar para facilitar busca
+                toId: toId
             },
             classes: fromId === toId ? 'loop' : ''
         });

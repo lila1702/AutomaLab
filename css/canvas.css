@@ -97,6 +97,23 @@
     box-shadow: 0 0 15px rgba(255, 152, 0, 0.5) !important;
 }
 
+/* ===== ESTADOS DURANTE SIMULAÇÃO AFN ===== */
+/* Estado alcançado DIRETAMENTE (sem epsilon) - amarelo intenso */
+.highlighted-direct-state {
+    background-color: #ffeb3b !important;
+    border-color: #f57f17 !important;
+    border-width: 4px !important;
+    box-shadow: 0 0 12px rgba(255, 235, 59, 0.6) !important;
+}
+
+/* Estado alcançado por EPSILON-CLOSURE - azul escuro */
+.highlighted-epsilon-state {
+    background-color: #64b5f6 !important;
+    border-color: #1976d2 !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 8px rgba(25, 118, 210, 0.5) !important;
+}
+
 /* Animação para estados arrastáveis */
 .canvas node:active {
     cursor: grabbing !important;

@@ -261,17 +261,21 @@ APP.canvas.cy.on('tap', 'node', (evt) => {
             document.body.style.cursor = 'default';
             
             // Prompt para símbolos
-            const symbols = prompt('Digite os símbolos (separados por vírgula):', 'a');
+            const symbols = prompt('Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e', 'a');
             
             if (symbols !== null && symbols.trim() !== '') {
-                const symbolArray = symbols.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                const symbolArray = parseSymbols(symbols);
                 
-                try {
-                    const cmd = new AddTransitionCommand(APP.canvas, fromId, toId, symbolArray);
-                    APP.undoRedo.execute(cmd);
-                    showNotification(MESSAGES.SUCCESS.TRANSITION_CREATED, 'success', 2000);
-                } catch (error) {
-                    showNotification(error.message, 'error');
+                if (symbolArray.length === 0) {
+                    showNotification('Nenhum símbolo válido foi inserido', 'warning', 1500);
+                } else {
+                    try {
+                        const cmd = new AddTransitionCommand(APP.canvas, fromId, toId, symbolArray);
+                        APP.undoRedo.execute(cmd);
+                        showNotification(MESSAGES.SUCCESS.TRANSITION_CREATED, 'success', 2000);
+                    } catch (error) {
+                        showNotification(error.message, 'error');
+                    }
                 }
             } else {
                 showNotification('Transição cancelada', 'warning', 1500);
@@ -411,14 +415,12 @@ function updateSidebar(stateId) {
 
 function editTransition(transition) {
     const newSymbols = prompt(
-        'Digite os símbolos (separados por vírgula):',
+        'Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e',
         transition.symbols.join(',')
     );
 
     if (newSymbols !== null) {
-        const symbolArray = newSymbols.split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
+        const symbolArray = parseSymbols(newSymbols);
 
         if (symbolArray.length === 0) {
             showNotification('Nenhum símbolo foi inserido', 'warning');

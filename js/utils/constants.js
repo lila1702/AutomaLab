@@ -139,7 +139,8 @@ const STORAGE_KEYS = {
 
 // ===== CARACTERES ESPECIAIS =====
 const SPECIAL_CHARS = {
-    EPSILON: 'ε',
+    EPSILON: 'ε',      // U+03B5 (Greek Small Letter Epsilon)
+    EPSILON_ALT: 'ϵ',  // U+03F5 (Greek Lunate Epsilon Symbol)
     EMPTY: '',
     SEPARATOR: ',',
     ARROW: '→',

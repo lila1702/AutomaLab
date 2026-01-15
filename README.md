@@ -14,6 +14,7 @@ AutomaLab é uma ferramenta web para criar, visualizar, editar, simular e analis
 
 - Interface Visual Intuitiva: Drag-and-drop de estados
 - Simulação em Tempo Real: Teste cadeias instantaneamente
+- **Suporte a Épsilon-Transições (ε)**: AFNs com transições vazias
 - Export/Import JSON: Salve e compartilhe seus autômatos
 - Undo/Redo Completo: Desfaça e refaça qualquer ação
 - Zoom e Pan: Navegue em autômatos grandes

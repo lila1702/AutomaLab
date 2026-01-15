@@ -139,6 +139,16 @@
                         <span>Símbolo: <strong id="tape-current-symbol">-</strong></span>
                         <span>Passo: <strong id="tape-current-step">0</strong></span>
                     </div>
+                    
+                    <!-- Painel de Rotas (NOVO!) -->
+                    <div class="tape-routes" id="tape-routes" style="display: none; padding: 8px; background: #fff3e0; border-top: 2px solid #ff9800; font-size: 11px;">
+                        <div style="font-weight: bold; color: #f57c00; margin-bottom: 4px;">
+                            🔀 Rotas Exploradas (Não-Determinismo):
+                        </div>
+                        <div id="tape-routes-list" style="max-height: 80px; overflow-y: auto;">
+                            <!-- Rotas geradas dinamicamente -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -220,6 +230,13 @@
                                 title="Simular com animação (Enter)">
                             ▶ Simular
                         </button>
+                    </div>
+                    
+                    <!-- Dica de Épsilon -->
+                    <div style="margin-top: 8px; padding: 6px 8px; background: #e3f2fd; border-left: 3px solid #2196f3; border-radius: 3px; font-size: 11px; color: #1976d2;">
+                        <strong>💡 Épsilon-transições (AFN):</strong><br>
+                        Digite <strong>epsilon</strong>, <strong>eps</strong> ou <strong>e</strong> para criar transições vazias (ε)<br>
+                        <span style="font-size: 10px; color: #666;">Funciona em qualquer teclado!</span>
                     </div>
                     
                     <!-- Saída da simulação -->
