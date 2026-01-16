@@ -145,7 +145,8 @@ class DeleteTransitionCommand extends Command {
     execute() {
         const trans = this.canvas.transitions.find(
             t => t.fromId === this.transitionData.fromId && 
-                 t.toId === this.transitionData.toId
+                 t.toId === this.transitionData.toId &&
+                 JSON.stringify(t.symbols) === JSON.stringify(this.transitionData.symbols)
         );
         if (trans) {
             this.canvas.removeTransition(trans);
@@ -155,11 +156,18 @@ class DeleteTransitionCommand extends Command {
     undo() {
         const trans = TransitionEdge.fromJSON(this.transitionData);
         this.canvas.transitions.push(trans);
-        this.canvas.redraw();
+        // ✅ Atualizar visualização no Cytoscape
+        this.canvas._updateAggregatedEdge(trans.fromId, trans.toId);
+        this.canvas._updateStats();
     }
 
     toString() {
-        return `Deletar Transição`;
+        const fromState = this.canvas.states.get(this.transitionData.fromId);
+        const toState = this.canvas.states.get(this.transitionData.toId);
+        const fromLabel = fromState?.label || `q${this.transitionData.fromId}`;
+        const toLabel = toState?.label || `q${this.transitionData.toId}`;
+        const symbols = this.transitionData.symbols.join(',');
+        return `Deletar Transição ${fromLabel} --${symbols}--> ${toLabel}`;
     }
 }
 

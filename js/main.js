@@ -19,6 +19,10 @@ const APP = {
     undoRedo: null,
     zoomPan: null,
     tapeManager: null,
+    transitionModal: null,
+    validator: null,
+    exportUtils: null,
+    converter: null,
     currentMode: MODES.SELECT,
     automataType: 'dfa',
     automataName: 'Autômato 1',
@@ -49,9 +53,15 @@ function initializeApp() {
         
         // TapeManager (após criar simulator)
         APP.tapeManager = new TapeManager(APP.simulator);
+        
+        // Validator, ExportUtils e Converter
+        APP.validator = new AutomataValidator(APP.canvas);
+        APP.exportUtils = new ExportUtils(APP.canvas, APP.simulator);
+        APP.converter = new AutomataConverter(APP.canvas, APP.simulator);
 
         wait(100).then(() => {
             APP.contextModal = new ContextModalManager(APP.canvas);
+            APP.transitionModal = new TransitionModalManager(APP.canvas);
         });
 
         initializeUI();
@@ -140,14 +150,15 @@ function initializeNewFeatures() {
         });
     }
 
-    // Snap to Grid (placeholder)
+    // Snap to Grid
     const snapToGridCheckbox = document.getElementById('snap-to-grid');
     if (snapToGridCheckbox) {
         snapToGridCheckbox.addEventListener('change', (e) => {
             const enabled = e.target.checked;
+            APP.canvas.snapToGrid = enabled;
             showNotification(
-                `Snap to Grid: ${enabled ? 'Ativado' : 'Desativado'} (em desenvolvimento)`,
-                'info',
+                `Snap to Grid: ${enabled ? 'Ativado' : 'Desativado'}`,
+                'success',
                 1500
             );
         });
@@ -174,6 +185,78 @@ function initializeNewFeatures() {
             APP.toolbar.transitionStart = null;
             document.body.style.cursor = 'default';
             showNotification('Transição cancelada', 'info', 1500);
+        }
+    });
+    
+    // ===== ATALHOS DE TECLADO ADICIONAIS =====
+    document.addEventListener('keydown', (e) => {
+        // Ctrl+Shift+E: Exportar PNG
+        if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+            e.preventDefault();
+            APP.exportUtils.exportAsPNG(APP.automataName || 'automato');
+            showNotification('📸 PNG exportado!', 'success', 2000);
+        }
+        
+        // Ctrl+Shift+V: Validar
+        else if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+            e.preventDefault();
+            APP.validator.showReport();
+        }
+        
+        // Ctrl+G: Toggle Grid
+        else if (e.ctrlKey && e.key === 'g') {
+            e.preventDefault();
+            const canvas = document.getElementById('canvas');
+            const showGridCheckbox = document.getElementById('show-grid');
+            if (canvas && showGridCheckbox) {
+                showGridCheckbox.checked = !showGridCheckbox.checked;
+                canvas.classList.toggle('hide-grid');
+                showNotification(
+                    `Grade: ${showGridCheckbox.checked ? 'Visível' : 'Oculta'}`,
+                    'info',
+                    1500
+                );
+            }
+        }
+        
+        // Ctrl+Shift+S: Snap to Grid Toggle
+        else if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+            e.preventDefault();
+            const snapCheckbox = document.getElementById('snap-to-grid');
+            if (snapCheckbox) {
+                snapCheckbox.checked = !snapCheckbox.checked;
+                APP.canvas.snapToGrid = snapCheckbox.checked;
+                showNotification(
+                    `Snap to Grid: ${snapCheckbox.checked ? 'Ativado' : 'Desativado'}`,
+                    'success',
+                    1500
+                );
+            }
+        }
+        
+        // Alt+S, Alt+A, Alt+T: Mudar modos (já existentes em outros lugares, mas reforçando)
+        else if (e.altKey && e.key === 's') {
+            e.preventDefault();
+            APP.toolbar.setMode(MODES.SELECT);
+        }
+        else if (e.altKey && e.key === 'a') {
+            e.preventDefault();
+            APP.toolbar.setMode(MODES.ADD_STATE);
+        }
+        else if (e.altKey && e.key === 't') {
+            e.preventDefault();
+            APP.toolbar.setMode(MODES.ADD_TRANSITION);
+        }
+        
+        // F: Fit View (ajustar visualização)
+        else if (e.key === 'f' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+            const activeElement = document.activeElement;
+            // Só executar se não estiver em input/textarea
+            if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                APP.canvas.fitView();
+                showNotification('🔍 Visualização ajustada', 'info', 1500);
+            }
         }
     });
 }
@@ -211,6 +294,41 @@ function initializeUI() {
     const btnDeleteAll = document.getElementById('btn-delete-all');
     if (btnDeleteAll) {
         btnDeleteAll.addEventListener('click', () => APP.toolbar.handleClear());
+    }
+
+    // Novos botões de exportação
+    const btnExportPNG = document.getElementById('btn-export-png');
+    if (btnExportPNG) {
+        btnExportPNG.addEventListener('click', () => {
+            APP.exportUtils.exportAsPNG(APP.automataName || 'automato');
+        });
+    }
+
+    const btnExportSimulation = document.getElementById('btn-export-simulation');
+    if (btnExportSimulation) {
+        btnExportSimulation.addEventListener('click', () => {
+            APP.exportUtils.downloadStepByStepText(APP.automataName || 'simulacao');
+        });
+    }
+
+    // Validação
+    const btnValidate = document.getElementById('btn-validate');
+    if (btnValidate) {
+        btnValidate.addEventListener('click', () => {
+            const report = APP.validator.generateReport();
+            console.log(report);
+            APP.validator.showReport();
+        });
+    }
+
+    // Conversão AFN→AFD
+    const btnConvertDfa = document.getElementById('btn-convert-dfa');
+    if (btnConvertDfa) {
+        btnConvertDfa.addEventListener('click', () => {
+            if (confirm('Converter AFN em AFD? O autômato atual será substituído.')) {
+                APP.converter.applyConversion();
+            }
+        });
     }
 }
 
@@ -260,29 +378,34 @@ APP.canvas.cy.on('tap', 'node', (evt) => {
             APP.canvas.cy.$(`#state-${fromId}`).removeClass('transition-source');
             document.body.style.cursor = 'default';
             
-            // Prompt para símbolos
-            const symbols = prompt('Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e', 'a');
-            
-            if (symbols !== null && symbols.trim() !== '') {
-                const symbolArray = parseSymbols(symbols);
-                
-                if (symbolArray.length === 0) {
-                    showNotification('Nenhum símbolo válido foi inserido', 'warning', 1500);
-                } else {
-                    try {
-                        const cmd = new AddTransitionCommand(APP.canvas, fromId, toId, symbolArray);
-                        APP.undoRedo.execute(cmd);
-                        showNotification(MESSAGES.SUCCESS.TRANSITION_CREATED, 'success', 2000);
-                    } catch (error) {
-                        showNotification(error.message, 'error');
-                    }
-                }
-            } else {
-                showNotification('Transição cancelada', 'warning', 1500);
-            }
-            
-            // Reset
+            // Reset transitionStart
             APP.toolbar.transitionStart = null;
+            
+            // Abrir modal para editar símbolos
+            if (APP.transitionModal) {
+                APP.transitionModal.open(fromId, toId);
+            } else {
+                // Fallback: prompt nativo
+                const symbols = prompt('Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e', 'a');
+                
+                if (symbols !== null && symbols.trim() !== '') {
+                    const symbolArray = parseSymbols(symbols);
+                    
+                    if (symbolArray.length === 0) {
+                        showNotification('Nenhum símbolo válido foi inserido', 'warning', 1500);
+                    } else {
+                        try {
+                            const cmd = new AddTransitionCommand(APP.canvas, fromId, toId, symbolArray);
+                            APP.undoRedo.execute(cmd);
+                            showNotification(MESSAGES.SUCCESS.TRANSITION_CREATED, 'success', 2000);
+                        } catch (error) {
+                            showNotification(error.message, 'error');
+                        }
+                    }
+                } else {
+                    showNotification('Transição cancelada', 'warning', 1500);
+                }
+            }
         }
     }
 });
@@ -361,8 +484,9 @@ function runSimulation(chain, animated = false) {
         return;
     }
 
-    // Simular
-    const result = APP.simulator.simulate(chain, APP.automataType);
+    // Simular - detectar tipo automaticamente
+    const detectedType = APP.canvas._detectAutomataType();
+    const result = APP.simulator.simulate(chain, detectedType);
     console.log('📊 Resultado da simulação:', result);
     
     // Modo animado

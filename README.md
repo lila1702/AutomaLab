@@ -1,24 +1,26 @@
 # AutomaLab
 
-![Status](https://img.shields.io/badge/Status-50%25%20Completo-purple)
-![Versão](https://img.shields.io/badge/Versão-0.1-blue)
+![Status](https://img.shields.io/badge/Status-Completo-brightgreen)
+![Versão](https://img.shields.io/badge/Versão-1.0-blue)
 ![Licença](https://img.shields.io/badge/Licença-MIT-green)
 
 **Editor web interativo de Autômatos Finitos para fins didáticos**
 
 ## Sobre o Projeto
 
-AutomaLab é uma ferramenta web para criar, visualizar, editar, simular e analisar **Autômatos Finitos** (no momento, AFD e AFND). Está planejado para ele também conseguir manusear Autômatos com Pilha (PDA) e Máquinas de Turing. Inspirado pelo JFLAP, o AutomaLab foca em simplicidade e usabilidade para estudantes da disciplina de **Linguagens Formais e Autômatos (LFA)**, especialmente na Universidade Federal do Ceará (UFC).
+AutomaLab é uma ferramenta web para criar, visualizar, editar, simular e analisar **Autômatos Finitos** (AFD e AFN). Desenvolvido para a disciplina de **Linguagens Formais e Autômatos (LFA)** da Universidade Federal do Ceará (UFC), o AutomaLab oferece uma interface visual moderna e intuitiva para o estudo de teoria da computação.
 
 ### Principais Características
 
-- Interface Visual Intuitiva: Drag-and-drop de estados
-- Simulação em Tempo Real: Teste cadeias instantaneamente
-- **Suporte a Épsilon-Transições (ε)**: AFNs com transições vazias
-- Export/Import JSON: Salve e compartilhe seus autômatos
-- Undo/Redo Completo: Desfaça e refaça qualquer ação
-- Zoom e Pan: Navegue em autômatos grandes
-- Atalhos de Teclado: Para facilitar o manuseio
+- ✨ **Interface Visual Intuitiva**: Drag-and-drop de estados com Cytoscape.js
+- 🎯 **Simulação Completa**: AFD e AFN com fechamento épsilon
+- 🎬 **Animação Step-by-Step**: Visualize passo a passo como a cadeia é processada
+- 📊 **Análise Avançada**: Detecta estados inalcançáveis, deadlocks, valida determinismo
+- 🔄 **Conversão AFN→AFD**: Construção por subconjuntos automática
+- 💾 **Export Múltiplo**: JSON, PNG, Texto (simulação detalhada)
+- ⚡ **Undo/Redo Completo**: Command Pattern com 50 níveis de histórico
+- ⌨️ **Atalhos de Teclado**: Workflow otimizado para produtividade
+- 🎨 **UI Moderna**: Modais com chips, notificações toast, animações suaves
 
 ---
 
@@ -89,20 +91,25 @@ cd AutomaLab
 | `Ctrl+Z` | Desfazer |
 | `Ctrl+Y` ou `Ctrl+Shift+Z` | Refazer |
 
-### Arquivo
+### Arquivo e Exportação
 | Atalho | Ação |
 |--------|------|
 | `Ctrl+E` | Exportar JSON |
 | `Ctrl+I` | Importar JSON |
+| `Ctrl+Shift+E` | Exportar PNG |
 
 ### Visualização
 | Atalho | Ação |
 |--------|------|
 | `Scroll` | Zoom In/Out |
-| `Ctrl++` | Zoom In |
-| `Ctrl+-` | Zoom Out |
-| `Ctrl+0` | Reset Zoom |
-| `Shift+Click` ou `Botão do Meio` | Pan (arrastar canvas) |
+| `F` | Fit View (ajustar visualização) |
+| `Ctrl+G` | Mostrar/Ocultar Grade |
+| `Ctrl+Shift+S` | Ativar/Desativar Snap to Grid |
+
+### Análise e Validação
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+Shift+V` | Validar Autômato |
 
 ### Outros
 | Atalho | Ação |
@@ -138,59 +145,108 @@ cd AutomaLab
 
 ---
 
-## 📊 Status do Desenvolvimento (50%)
+## 📊 Funcionalidades Implementadas
 
-### Core Funcional (100%)
+### ✅ Core Funcional (100%)
 
- - [X] Criar, editar e deletar estados
- - [X] Criar, editar e deletar transições
- - [X] Marcar estado inicial e de aceitação
- - [X] Drag-and-drop de estados (Cytoscape nativo)
- - [X] Context menu (clique direito) para alteração dos estados
- - [X] Export/Import JSON completo
- - [X] Responsividade
+- Criar, editar e deletar estados
+- Criar, editar e deletar transições (via modal com chips)
+- Marcar estado inicial e de aceitação
+- Drag-and-drop de estados (Cytoscape nativo)
+- Context menu (clique direito) para edição rápida
+- Export/Import JSON completo
+- Responsividade total
+- Snap to Grid (alinhamento opcional)
 
-### Simulação (80%)
+### ✅ Simulação (100%)
 
-- [X] Simulação de AFD (Determinístico)
-- [X] Simulação de AFND (Não-determinístico) básica
-- [X] Feedback visual de aceitação/rejeição
-- [ ] Transições epsilon (ε)
-- [ ] Validação de determinismo
-- [ ] Animação visual passo-a-passo
+- Simulação de AFD (Determinístico)
+- Simulação de AFN (Não-determinístico) com exploração exaustiva
+- Feedback visual de aceitação/rejeição
+- Transições epsilon (ε) com fechamento épsilon correto
+- Detecção automática de tipo (AFD/AFN)
+- **Animação step-by-step com TapeManager** (velocidade ajustável)
+- Exportação de simulação em texto detalhado
 
-### Controles (100%)
+### ✅ Conversão (100%)
 
-- [X] Zoom in/out com scroll e botões
-- [X] Pan (arrastar canvas) nativo
-- [X] Reset de visualização
-- [X] Ajustar ao conteúdo (fit)
+- AFN → AFD (construção por subconjuntos)
+- Suporte completo a épsilon-closure
+- Labels simplificados (q0, q1... em vez de q{1,2,3})
 
-### Histórico (100%)
+### ✅ Validações (100%)
 
-- [X] Undo/Redo completo (Command Pattern)
-- [X] Até 50 ações no histórico
-- [X] Botões e atalhos de teclado
-- [X] Estados sincronizados
+- Validação de AFD vs AFN (automática)
+- Detecção de estados inalcançáveis
+- Detecção de deadlocks
+- Análise de alfabeto
+- Relatório completo de problemas
 
-### Validações (70%)
+### ✅ Histórico (100%)
 
-- [X] Validação de nomes de estados
-- [X] Validação de símbolos
-- [X] Validação de cadeias
- - [ ] Validação de AFD vs AFND
- - [ ] Detecção de estados inalcançáveis
+- Undo/Redo completo (Command Pattern)
+- Até 50 ações no histórico
+- Restauração perfeita de transições deletadas
+- Sincronização com interface
+
+### ✅ Exportação (100%)
+
+- Export JSON (preserva multi-símbolos)
+- Export PNG (2x resolution, fundo branco)
+- Export Texto (simulação passo-a-passo detalhada)
+
+### ✅ UI/UX (100%)
+
+- Modal de edição de transições com chips (azul=ativo, vermelho=deletar)
+- Context menu visual moderno
+- Atalhos de teclado completos
+- Notificações toast informativas
+- Controles de zoom e navegação
+- Fita de simulação animada com controles (play, pause, next, previous)
 
 ---
 
-## 🐛 Reportar Bugs
+## 🔧 Correções e Melhorias (Última Atualização: 16/01/2026)
 
-Encontrou um bug? Abra uma [issue](https://github.com/seu-usuario/automalab/issues) com:
+### Bugs Corrigidos
 
-- Descrição clara do problema
-- Passos para reproduzir
-- Comportamento esperado vs. atual
-- Screenshots (se aplicável)
+1. **Importação de Transições Multi-Símbolo** ✅
+   - **Problema:** JSON exportava `["a", "b", "ε"]` mas importação criava só 1 transição
+   - **Solução:** Método `import()` agora itera sobre cada símbolo e cria transições separadas
+
+2. **Simulação AFN Rejeitando Incorretamente** ✅
+   - **Problema:** AFN rejeitava cadeias aceitas pelo AFD convertido
+   - **Solução:** Fechamento épsilon aplicado **antes** de processar cada símbolo
+
+3. **Detecção de Tipo Automática** ✅
+   - **Problema:** Usuário precisava selecionar AFD/AFN manualmente
+   - **Solução:** Sistema detecta automaticamente baseado em épsilon e não-determinismo
+
+4. **Undo não Restaurava Transições** ✅
+   - **Problema:** Ctrl+Z após deletar transição não restaurava visual
+   - **Solução:** `DeleteTransitionCommand.undo()` chama `_updateAggregatedEdge()`
+
+5. **Labels Confusos na Conversão** ✅
+   - **Problema:** Estados convertidos mostravam `q{1,2,3,4}` (confuso)
+   - **Solução:** Labels simplificados para `q0, q1, q2...` sequenciais
+
+6. **Modal da Fita Cortado** ✅
+   - **Problema:** Conteúdo inferior da fita não era visível
+   - **Solução:** Altura aumentada de 240px → 320px
+
+---
+
+## 🧪 Testes
+
+Veja o arquivo [CASOS_DE_TESTE.md](CASOS_DE_TESTE.md) para uma suíte completa de 19 casos de teste cobrindo:
+- Criação de AFD e AFN
+- Épsilon-transições
+- Conversão AFN→AFD
+- Undo/Redo
+- Validação
+- Export/Import
+- Animação step-by-step
+- Edge cases
 
 ---
 
@@ -236,19 +292,7 @@ Encontrou um bug? Abra uma [issue](https://github.com/seu-usuario/automalab/issu
 
 ## 📄 Licença
 
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-MIT License
-
-Copyright (c) 2025 AutomaLab
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software...
-```
+Este projeto está sob a licença **MIT**. Veja o arquivo LICENSE para mais detalhes.
 
 ---
 
@@ -262,17 +306,10 @@ copies of the Software...
 
 ## 🌟 Agradecimentos
 
-- **Inspiração:** JFLAP - Duke University
 - **Orientação:** Prof. Cenez Araújo de Andrade (UFC)
-- **Tecnologias:** Cytoscape.js, comunidade open-source
+- **Tecnologias:** Cytoscape.js, Vanilla JavaScript
 - **Disciplina:** LFA - Linguagens Formais e Autômatos (UFC)
 
 ---
 
-## 🚀 Próximos Passos
-
-1. **v0.1.1** - Animação visual passo-a-passo
-2. **v0.2** - Adição de épsilum, conversão AFND→AFD e minimização
-3. **v0.3** - Gramáticas formais
-4. **v0.4** - Autômatos com pilha (PDA)
-5. **v0.5** - Máquinas de Turing
+**Desenvolvido em Janeiro de 2026 para a disciplina de Linguagens Formais e Autômatos**

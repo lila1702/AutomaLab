@@ -94,28 +94,28 @@ class Simulator {
         let activeStates = this._epsilonClosure(new Set([this.canvas.initialState]));
         const steps = [];
 
+        // Verificar se há estados de aceitação iniciais (via épsilon)
+        let initialAccepted = false;
+        for (const stateId of activeStates) {
+            if (this.canvas.states.get(stateId).isAccept) {
+                initialAccepted = true;
+                break;
+            }
+        }
+
         // Passo inicial: mostrar estados após fechamento épsilon
         steps.push({
             step: 0,
             states: Array.from(activeStates),
             symbol: 'início',
-            accepted: false,
-            transitions: [], // Sem transições no passo inicial
+            accepted: initialAccepted,
+            transitions: [],
         });
 
         // Cadeia vazia
         if (chain === '' || chain === 'ε' || chain === 'ϵ') {
-            let isAccepted = false;
-            for (const stateId of activeStates) {
-                if (this.canvas.states.get(stateId).isAccept) {
-                    isAccepted = true;
-                    break;
-                }
-            }
-            // Atualizar passo inicial com resultado
-            steps[0].accepted = isAccepted;
             this.stepHistory = steps;
-            return this._createResult(isAccepted, MESSAGES.SIMULATOR.EMPTY_CHAIN, steps);
+            return this._createResult(initialAccepted, MESSAGES.SIMULATOR.EMPTY_CHAIN, steps);
         }
 
         // Processar cada símbolo
@@ -128,10 +128,14 @@ class Simulator {
             }
             
             const nextStates = new Set();
-            const transitionsTaken = []; // Rastrear todas as transições tomadas
+            const transitionsTaken = [];
+
+            // CRITICAL: Aplicar fechamento épsilon ANTES de buscar transições
+            // Isso garante que exploramos todos os caminhos épsilon antes de consumir o símbolo
+            const expandedActiveStates = this._epsilonClosure(activeStates);
 
             // Encontrar todas as transições possíveis (exceto épsilon)
-            for (const currentStateId of activeStates) {
+            for (const currentStateId of expandedActiveStates) {
                 const transitions = this.canvas.transitions.filter(
                     t => t.fromId === currentStateId && t.symbols.includes(symbol)
                 );

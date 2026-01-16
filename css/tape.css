@@ -12,7 +12,7 @@
     bottom: 0;
     left: 195px; /* Largura da sidebar esquerda */
     right: 300px; /* Largura da sidebar direita */
-    height: 240px;
+    height: 320px; /* Altura aumentada para melhor visualização */
     
     z-index: 9999 !important;
     box-sizing: border-box;

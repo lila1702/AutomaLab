@@ -257,6 +257,22 @@
                                 title="Carregar autômato de arquivo JSON">
                             ⬆️ Importar JSON
                         </button>
+                        <button class="btn" id="btn-export-png" 
+                                title="Exportar imagem PNG do autômato">
+                            📸 Exportar PNG
+                        </button>
+                        <button class="btn" id="btn-export-simulation" 
+                                title="Exportar passo-a-passo da última simulação">
+                            📝 Exportar Simulação
+                        </button>
+                        <button class="btn" id="btn-validate" 
+                                title="Analisar autômato e detectar problemas">
+                            🔍 Analisar
+                        </button>
+                        <button class="btn" id="btn-convert-dfa" 
+                                title="Converter AFN em AFD determinístico">
+                            🔄 Converter → AFD
+                        </button>
                         <button class="btn danger" id="btn-delete-all" 
                                 title="Deletar todos os estados e transições">
                             ❌ Deletar Tudo
@@ -368,6 +384,8 @@
     <!-- Utilitários -->
     <script src="js/utils/constants.js"></script>
     <script src="js/utils/helpers.js"></script>
+    <script src="js/utils/validator.js"></script>
+    <script src="js/utils/exportUtils.js"></script>
     
     <!-- 2. Classes do Canvas -->
     <script src="js/canvas/stateNode.js"></script>
@@ -376,6 +394,7 @@
     
     <!-- 3. Simulador -->
     <script src="js/simulator/simulator.js"></script>
+    <script src="js/simulator/converter.js"></script>
     
     <!-- 4. Storage -->
     <script src="js/storage/jsonManager.js"></script>
@@ -383,6 +402,7 @@
     <!-- 5. UI -->
     <script src="js/ui/toolbar.js"></script>
     <script src="js/ui/contextModal.js"></script>
+    <script src="js/ui/transitionModal.js"></script>
     
     <!-- 6. NOVAS FUNCIONALIDADES (Features) -->
     <script src="js/features/undoRedo.js"></script>

@@ -122,6 +122,15 @@ class CanvasManager {
                         'target-arrow-color': '#1976d2'
                     }
                 },
+                // Épsilon-transição (cor roxa/magenta)
+                {
+                    selector: 'edge.epsilon',
+                    style: {
+                        'line-color': '#9c27b0',
+                        'target-arrow-color': '#9c27b0',
+                        'line-style': 'dashed'
+                    }
+                },
                 // Transição destacada durante simulação (NOVO!)
                 {
                     selector: 'edge.highlighted-transition',
@@ -162,6 +171,8 @@ class CanvasManager {
         this.nextStateId = 0;
         this.tempTransitionStart = null;
         this.tempTransitionPath = null;
+        this.snapToGrid = false; // Snap to Grid (default desligado)
+        this.gridSize = 40;      // Tamanho da grade em pixels
 
         // Eventos
         this._initEventListeners();
@@ -218,6 +229,15 @@ class CanvasManager {
         this.cy.on('free', 'node', (evt) => {
             const node = evt.target;
             const stateId = node.data('stateId');
+            
+            // Snap to Grid se habilitado
+            if (this.snapToGrid) {
+                const pos = node.position();
+                const snappedX = Math.round(pos.x / this.gridSize) * this.gridSize;
+                const snappedY = Math.round(pos.y / this.gridSize) * this.gridSize;
+                node.position({ x: snappedX, y: snappedY });
+            }
+            
             this._updateStateInMap(node);
             // Atualizar posição da seta inicial se for o estado inicial
             this.updateInitialArrowPosition(stateId);
@@ -256,28 +276,15 @@ class CanvasManager {
         // Click em transição para editar
         this.cy.on('tap', 'edge', (evt) => {
             const edge = evt.target;
+            // Ignorar seta inicial
+            if (edge.id() === 'initial-arrow') return;
+            
             const fromId = edge.source().data('stateId');
             const toId = edge.target().data('stateId');
-            const symbols = edge.data('symbols') || [];
             
-            // Prompt para editar símbolos
-            const newSymbols = prompt(
-                'Digite os símbolos (separados por vírgula).\nPara épsilon, digite: epsilon, eps ou e',
-                symbols.join(',')
-            );
-            
-            if (newSymbols !== null) {
-                const symbolArray = parseSymbols(newSymbols);
-                if (symbolArray.length > 0) {
-                    edge.data('label', symbolArray.join(','));
-                    edge.data('symbols', symbolArray);
-                    
-                    // Atualizar array auxiliar
-                    const trans = this.transitions.find(t => t.fromId === fromId && t.toId === toId);
-                    if (trans) trans.symbols = symbolArray;
-                    
-                    showNotification('Transição atualizada', 'success', 2000);
-                }
+            // Abrir modal de edição
+            if (typeof APP !== 'undefined' && APP.transitionModal) {
+                APP.transitionModal.open(fromId, toId);
             }
         });
     }
@@ -285,6 +292,12 @@ class CanvasManager {
     addState(x, y, label = null) {
         const stateId = this.nextStateId;
         const stateLabel = label || `q${stateId}`;
+        
+        // Snap to Grid se habilitado
+        if (this.snapToGrid) {
+            x = Math.round(x / this.gridSize) * this.gridSize;
+            y = Math.round(y / this.gridSize) * this.gridSize;
+        }
         
         // Adicionar no Cytoscape
         this.cy.add({
@@ -407,7 +420,7 @@ class CanvasManager {
      * Cria uma nova transição
      * @param {number} fromId - ID do estado de origem
      * @param {number} toId - ID do estado de destino
-     * @param {Array<string>} symbols - Símbolos da transição (deve ter apenas 1 símbolo!)
+     * @param {Array<string>} symbols - Símbolos da transição (pode ter múltiplos símbolos)
      * @returns {TransitionEdge} Nova transição
      */
     addTransition(fromId, toId, symbols = []) {
@@ -415,33 +428,19 @@ class CanvasManager {
             throw new Error('Estados inválidos para transição');
         }
 
-        // IMPORTANTE: Cada símbolo cria uma edge separada!
-        // Gerar ID único baseado no símbolo
-        const symbol = symbols[0]; // Deve ter apenas 1 símbolo
-        const symbolSafe = symbol.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitizar para ID
-        const edgeId = `edge-${fromId}-${toId}-${symbolSafe}-${Date.now()}`;
-        const label = symbols.join(',');
-
-        // Criar nova edge no Cytoscape
-        this.cy.add({
-            group: 'edges',
-            data: {
-                id: edgeId,
-                source: `state-${fromId}`,
-                target: `state-${toId}`,
-                label: label,
-                symbols: symbols,
-                fromId: fromId,  // Adicionar para facilitar busca
-                toId: toId
-            },
-            classes: fromId === toId ? 'loop' : ''
-        });
-
-        // Criar TransitionEdge compatível
-        const transition = new TransitionEdge(fromId, toId, symbols);
+        // Cada símbolo cria um TransitionEdge separado (para export preciso)
+        // MAS agrupa visualmente em uma única edge no Cytoscape
+        const symbol = symbols[0]; // Apenas 1 símbolo por transição
+        
+        // Criar TransitionEdge individual (mantém transições separadas internamente)
+        const transition = new TransitionEdge(fromId, toId, [symbol]);
         this.transitions.push(transition);
 
+        // Verificar/atualizar edge visual agregada
+        this._updateAggregatedEdge(fromId, toId);
+
         this._updateStats();
+        this._updateAutomataTypeUI();
         this._dispatchEvent(EVENTS.CANVAS_TRANSITION_CREATED, { transition });
         
         return transition;
@@ -452,20 +451,78 @@ class CanvasManager {
      * @param {TransitionEdge} transition - Transição a remover
      */
     removeTransition(transition) {
-        const edgeId = `edge-${transition.fromId}-${transition.toId}`;
-        const edge = this.cy.$(`#${edgeId}`);
-        
-        if (edge.length > 0) {
-            edge.remove();
-        }
-
+        // Remover do array interno
         const index = this.transitions.indexOf(transition);
         if (index > -1) {
             this.transitions.splice(index, 1);
         }
 
+        // Atualizar edge visual (pode ter outros símbolos)
+        this._updateAggregatedEdge(transition.fromId, transition.toId);
+
         this._updateStats();
+        this._updateAutomataTypeUI();
         this._dispatchEvent(EVENTS.CANVAS_TRANSITION_DELETED, { transition });
+    }
+
+    /**
+     * Atualiza/cria edge visual agregada entre dois estados
+     * Agrupa todas as transições entre fromId→toId em uma única edge
+     * @param {number} fromId - ID do estado de origem
+     * @param {number} toId - ID do estado de destino
+     * @private
+     */
+    _updateAggregatedEdge(fromId, toId) {
+        const edgeId = `edge-${fromId}-${toId}`;
+        const existingEdge = this.cy.$(`#${edgeId}`);
+        
+        // Coletar todos os símbolos de transições entre estes estados
+        const allSymbols = this.transitions
+            .filter(t => t.fromId === fromId && t.toId === toId)
+            .flatMap(t => t.symbols);
+        
+        if (allSymbols.length === 0) {
+            // Nenhuma transição: remover edge se existir
+            if (existingEdge.length > 0) {
+                existingEdge.remove();
+            }
+            return;
+        }
+        
+        // Remover duplicatas e ordenar
+        const uniqueSymbols = [...new Set(allSymbols)].sort();
+        const label = uniqueSymbols.join(',');
+        
+        // Detectar se contém épsilon
+        const hasEpsilon = uniqueSymbols.some(s => s === 'ε' || s === 'ϵ');
+        const classes = [];
+        if (fromId === toId) classes.push('loop');
+        if (hasEpsilon) classes.push('epsilon');
+        
+        if (existingEdge.length > 0) {
+            // Atualizar edge existente
+            existingEdge.data('label', label);
+            existingEdge.data('symbols', uniqueSymbols);
+            existingEdge.removeClass('epsilon loop');
+            if (classes.length > 0) {
+                existingEdge.addClass(classes.join(' '));
+            }
+        } else {
+            // Criar nova edge
+            this.cy.add({
+                group: 'edges',
+                data: {
+                    id: edgeId,
+                    source: `state-${fromId}`,
+                    target: `state-${toId}`,
+                    label: label,
+                    symbols: uniqueSymbols,
+                    fromId: fromId,
+                    toId: toId
+                },
+                classes: classes.join(' ')
+            });
+        }
     }
 
     /**
@@ -615,6 +672,66 @@ class CanvasManager {
     }
 
     /**
+     * Detecta automaticamente o tipo do autômato (AFD ou AFN)
+     * @returns {string} 'dfa' ou 'nfa'
+     */
+    _detectAutomataType() {
+        // Verificar épsilon-transições
+        const hasEpsilon = this.transitions.some(t => 
+            t.symbols.some(s => s === 'ε' || s === 'ϵ')
+        );
+        
+        if (hasEpsilon) {
+            return 'nfa'; // AFN com épsilon
+        }
+        
+        // Verificar não-determinismo: múltiplas transições com mesmo (estado, símbolo)
+        const transitionMap = new Map();
+        
+        for (const trans of this.transitions) {
+            const fromId = trans.fromId;
+            for (const symbol of trans.symbols) {
+                const key = `${fromId}-${symbol}`;
+                
+                if (transitionMap.has(key)) {
+                    return 'nfa'; // Múltiplas transições com mesmo símbolo = AFN
+                }
+                transitionMap.set(key, true);
+            }
+        }
+        
+        return 'dfa'; // Determinístico
+    }
+
+    /**
+     * Atualiza o tipo detectado do autômato na UI
+     */
+    _updateAutomataTypeUI() {
+        const detectedType = this._detectAutomataType();
+        const dropdown = document.getElementById('automata-type');
+        const statusIndicator = document.getElementById('automata-status');
+        
+        if (dropdown && APP && APP.automataType !== detectedType) {
+            // Mostrar warning se tipo selecionado ≠ tipo real
+            if (statusIndicator) {
+                if (APP.automataType === 'dfa' && detectedType === 'nfa') {
+                    statusIndicator.style.color = '#ff9800';
+                    statusIndicator.title = '⚠️ AFN detectado (épsilon ou não-determinismo)';
+                    statusIndicator.textContent = '⚠️';
+                } else {
+                    statusIndicator.style.color = '#4caf50';
+                    statusIndicator.title = '✓ Tipo correto';
+                    statusIndicator.textContent = '●';
+                }
+            }
+        } else if (statusIndicator) {
+            statusIndicator.style.color = '#4caf50';
+            statusIndicator.title = '✓ Autômato válido';
+            statusIndicator.textContent = '●';
+        }
+    }
+
+    /**
      * Importa dados para o canvas
      * @param {Object} data - Dados a importar
      */
@@ -650,7 +767,12 @@ class CanvasManager {
 
         // Importar transições
         data.transitions.forEach(transData => {
-            this.addTransition(transData.fromId, transData.toId, transData.symbols);
+            // ✅ CORREÇÃO: Criar 1 TransitionEdge para cada símbolo
+            // Cada TransitionEdge tem apenas 1 símbolo (arquitetura interna)
+            // O Cytoscape agrupa visualmente em 1 edge
+            transData.symbols.forEach(symbol => {
+                this.addTransition(transData.fromId, transData.toId, [symbol]);
+            });
         });
 
         // Importar estado inicial
