@@ -711,22 +711,18 @@ class CanvasManager {
         const dropdown = document.getElementById('automata-type');
         const statusIndicator = document.getElementById('automata-status');
         
-        if (dropdown && APP && APP.automataType !== detectedType) {
-            // Mostrar warning se tipo selecionado ≠ tipo real
-            if (statusIndicator) {
-                if (APP.automataType === 'dfa' && detectedType === 'nfa') {
-                    statusIndicator.style.color = '#ff9800';
-                    statusIndicator.title = '⚠️ AFN detectado (épsilon ou não-determinismo)';
-                    statusIndicator.textContent = '⚠️';
-                } else {
-                    statusIndicator.style.color = '#4caf50';
-                    statusIndicator.title = '✓ Tipo correto';
-                    statusIndicator.textContent = '●';
-                }
-            }
-        } else if (statusIndicator) {
+        // Atualizar dropdown automaticamente para o tipo detectado
+        if (dropdown && APP) {
+            dropdown.value = detectedType;
+            APP.automataType = detectedType;
+        }
+        
+        // Atualizar indicador de status
+        if (statusIndicator) {
             statusIndicator.style.color = '#4caf50';
-            statusIndicator.title = '✓ Autômato válido';
+            statusIndicator.title = detectedType === 'dfa' 
+                ? '✓ Autômato Finito Determinístico' 
+                : '✓ Autômato Finito Não-Determinístico';
             statusIndicator.textContent = '●';
         }
     }
